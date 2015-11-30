@@ -58,6 +58,7 @@ Darkkitten.Parm.Default_Text = Darkkitten.Parameters['Winodw Text'];
 (function(){
 
 })();
+//Modified Version of Window_NameEdit
 function Window_VariableEdit() {
     this.initialize.apply(this, arguments);
 }
@@ -76,6 +77,7 @@ Window_VariableEdit.prototype.initialize = function(maxLength) {
     this._index = this._name.length;
     this._maxLength = maxLength;
     this._defaultName = this._name;
+ //   this.activate();
 	this.deactivate();
     this.refresh();
     ImageManager.loadFace($gameActors.actor(1).faceName());
@@ -186,10 +188,6 @@ Window_VariableEdit.prototype.refresh = function() {
     var rect = this.itemRect(this._index);
     this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
 };
-
-
-
-
 
 //Scene_Input
 function Scene_Input() {
