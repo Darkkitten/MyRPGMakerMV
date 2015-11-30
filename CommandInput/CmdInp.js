@@ -24,6 +24,7 @@
  *
  * @help Use Plugin Command: enter_text <VariableNumber> <MaxCharacters> <Default Text>
  * Example: enter_text 12 18 Hello World
+ * or you can just use enter_text   to use the default settings.
  *
  */
 
@@ -36,7 +37,7 @@ Darkkitten.Parm = Darkkitten.Parm || {};
 
 Darkkitten.Parm.Text_Variable = Darkkitten.Parameters['Text Variable'];
 Darkkitten.Parm.Max_Characters = Darkkitten.Parameters['Max Characters'];
-Darkkitten.Parm.Default_Text = Darkkitten.Parameters['Winodw Text'];
+Darkkitten.Parm.Default_Text = Darkkitten.Parameters['Default Text'];
 
 		//Get Plugin Command Variables if not default.
         var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
