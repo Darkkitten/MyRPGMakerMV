@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v0.0.1 Enables a Command Input system.
+ * @plugindesc v0.0.1b Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -16,7 +16,7 @@
  * Default 12
  * @default 12
  *
- * @param Window Text
+ * @param Default Text
  * @desc The Default name of the Input Window. 
    Place "" around the text.
  * default Default Text
