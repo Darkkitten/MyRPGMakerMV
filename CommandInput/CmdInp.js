@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v0.9.0 Enables a Command Input system.
+ * @plugindesc v0.9.1 Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -28,38 +28,35 @@
  *
  */
 
+var Darkkitten = Darkkitten || {};
+Darkkitten.Parameters = PluginManager.parameters('CmdInp');
+Darkkitten.Param = Darkkitten.Param || {};
 
-(function(){
-	var Darkkitten = Darkkitten || {};
-	Darkkitten.Parameters = PluginManager.parameters('CmdInp');
-	Darkkitten.Parm = Darkkitten.Parm || {};
-
-	//Get Plugin Command Variables if not default.
-    var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
-    Game_Interpreter.prototype.pluginCommand = function(command, args) {
-        getInformation_pluginCommand.call(this, command, args);
-        if (command === "enter_text") {
-            if(args != null){
-            	
-				//Darkkitten.Parm.Text_Variable = args[0];
-				Darkkitten.Parameters.varId = args[0];
-				Darkkitten.Parameters.maxLength = args[1];
-				for (i = 2; i <args.length; i++){
-					Darkkitten.Parameters.defaultPromptText = args[i];
-					}
-					console.log("\n varId: "+ Darkkitten.Parameters.varId + " maxLength: "+ Darkkitten.Parameters.maxLength +" Default Prompt Text: "+Darkkitten.Parameters.defaultPromptText+"\n");
-					SceneManager.push(Scene_Input);
+//Get Plugin Command Variables if not default.
+var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
+Game_Interpreter.prototype.pluginCommand = function(command, args) {
+    getInformation_pluginCommand.call(this, command, args);
+    if (command === "enter_text") {
+        if(args != null){
+			//Darkkitten.Parm.Text_Variable = args[0];
+			Darkkitten.Param.varId = Number(args[0]);
+			Darkkitten.Param.maxLength = Number(args[1]);
+			for (i = 2; i <args.length; i++){
+				Darkkitten.Param.defaultPromptText = String(args[i]+" ");
+				}
+				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
+				SceneManager.push(Scene_Input);
 					
 			}
 			else{
-				Darkkitten.Parameters.varId = Darkkitten.Parm['Text Variable'];
-				Darkkitten.Parameters.maxLength = Darkkitten.Parm['Max Characters'];
-				Darkkitten.Parameters.defaultPromptText = Darkkitten.Parm['Default Header'];
-				console.log("\n varId: "+ Darkkitten.Parameters.varId + " maxLength: "+ Darkkitten.Parameters.maxLength +" Default Prompt Text: "+Darkkitten.Parameters.defaultPromptText+"\n");
+				Darkkitten.Param.varId = Number(Darkkitten.Parameters['Text Variable']);
+				Darkkitten.Parameters.maxLength = Number(Darkkitten.Parameters['Max Characters']);
+				Darkkitten.Parameters.defaultPromptText = String(Darkkitten.Parameters['Default Header']+" ");
+				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
 				SceneManager.push(Scene_Input);
 			}
-        }
-	}
+      }
+}
 
 //------------------------------------------------------------------------
 //Scene_Input
@@ -69,6 +66,10 @@
 function Scene_Input(){
     this.initialize.apply(this, arguments);
 }
+
+var varId = Darkkitten.Param.varId;
+var maxLength = Darkkitten.Param.maxLength;
+var defaultPromptText = Darkkitten.Param.defaultPromptText;
 
 //Constructors
 Scene_Input.prototype = Object.create(Scene_MenuBase.prototype);
@@ -95,15 +96,14 @@ Scene_Input.prototype.CEW = function() {
 }
 
 Scene_Input.prototype.CIW = function() {
-	  this._inputTextWindow = new Window_NameInput(this._editTextWindow);
+	  this._inputTextWindow = new Window_TextInput(this._editTextWindow);
 	  this._inputTextWindow.setHandler('ok', this.onThatsJustFine.bind(this));
 	  this.addWindow(this._inputTextWindow);
 }
 
 Scene_Input.prototype.onThatsJustFine = function() {
-	var varId = Darkkitten.Parameters.varId;
-	$gameVariables.setValue(this.varId, this._editTextWindow.text());
-	console.log("\Final Text:" + this._editTextWindow.text());
+	$gameVariables.setValue(Darkkitten.Param.varId, this._editTextWindow.finaltext());
+	console.log("\Final Text:" + this._editTextWindow.finaltext());
 	this.popScene();
 }
 
@@ -126,18 +126,15 @@ Window_TextEdit.prototype.initialize = function() {
     var x = (Graphics.boxWidth - width) / 2;
     var y = (Graphics.boxHeight - (height + this.fittingHeight(9) + 8)) / 2;
     Window_Base.prototype.initialize.call(this, x, y, width, height);
-    var varId = Darkkitten.Parameters.varId;
-    var defaultText = $gameVariables[varId];
-    if (defaultText == null)
+    this.defaultText = $gameVariables[Darkkitten.Param.varId];
+    if (this.defaultText == null)
     {
-		defaultText = '';
+		this.defaultText = '';
 	}
 	else {
-    		defaultText  = $gameVariables[varId]; 
+    		this.defaultText  = $gameVariables[Darkkitten.Param.varId]; 
     }
-    var maxLength = Darkkitten.Parameters.maxLength;
-    var defaultPromptText = Darkkitten.Parameters.defaultPromptText;
-    this._text = defaultText.slice(0, maxLength);
+    this._text = this.defaultText.slice(0, Darkkitten.Param.maxLength);
     this._index = this._text.length;
     this.activate();
     this.refresh();
@@ -151,22 +148,22 @@ Window_TextEdit.prototype.windowHeight = function() {
     return this.fittingHeight(4);
 }
 
-Window_TextEdit.prototype.text = function() {
+Window_TextEdit.prototype.finaltext = function() {
     return this._text;
+    console.log(this._text);
 }
 
 Window_TextEdit.prototype.restoreDefault = function() {
-	var varId = Darkkitten.Parameters.varId;
-    var defaultText = $gameVariables[varId];
-    this._text = defaultText;
+    var _text = this.defaultText;
     this._index = this._text.length;
     this.refresh();
     return this._text.length > 0;
+    console.log(this._text +" "+this.defaultText);
 }
 
 Window_TextEdit.prototype.add = function(ch) {
 	var maxLength = Darkkitten.Parameters.maxLength;
-    if (this._index < maxLength) {
+    if (this._index < Darkkitten.Param.maxLength) {
         this._text += ch;
         this._index++;
         this.refresh();
@@ -188,8 +185,7 @@ Window_TextEdit.prototype.back = function() {
 }
 
 Window_TextEdit.prototype.DefaultTextWidth = function(){
-	var maxLength = Darkkitten.Parameters.maxLength;
-	return maxLength;
+	return Darkkitten.Param.maxLength;
 }
 
 Window_TextEdit.prototype.charWidth = function() {
@@ -198,9 +194,8 @@ Window_TextEdit.prototype.charWidth = function() {
 }
 
 Window_TextEdit.prototype.left = function() {
-	    var maxLength = Darkkitten.Parameters.maxLength;
 		var textCenter = (this.contentsWidth() + this.DefaultTextWidth()) / 2;
-		var textWidth = (maxLength + 1) * this.charWidth();
+		var textWidth = (Darkkitten.Param.maxLength + 1) * this.charWidth();
     	return Math.min(textCenter - textWidth / 2, this.contentsWidth() - textWidth);
 }
 
@@ -242,11 +237,9 @@ Window_TextEdit.prototype.drawChar = function(index) {
 }
 
 Window_TextEdit.prototype.refresh = function() {
-	var maxLength = Darkkitten.Parameters.maxLength;
-	var defaultPromptText = Darkkitten.Parameters.defaultPromptText;
     this.contents.clear();
-	this.drawTextEx(defaultPromptText +"\n" +this._text ,0 , this.lineHeight());
-    for (var i = 0; i < maxLength; i++) {
+	this.drawTextEx(Darkkitten.Param.defaultPromptText, 0 , this.lineHeight());
+    for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     	this.drawUnderline(i);
     }
     for (var j = 0; j < this._text.length; j++) {
@@ -255,8 +248,270 @@ Window_TextEdit.prototype.refresh = function() {
     var rect = this.itemRect(this._index);
     this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
 }
-       
-})();
 
+//-----------------------------------------------------------------------------
+// Window_TextInput
+//
+// The window for selecting text characters on the name input screen.
 
+function Window_TextInput() {
+    this.initialize.apply(this, arguments);
+}
 
+Window_TextInput.prototype = Object.create(Window_Selectable.prototype);
+Window_TextInput.prototype.constructor = Window_TextInput;
+Window_TextInput.LATIN1 =
+        [ 'A','B','C','D','E',  'a','b','c','d','e',
+          'F','G','H','I','J',  'f','g','h','i','j',
+          'K','L','M','N','O',  'k','l','m','n','o',
+          'P','Q','R','S','T',  'p','q','r','s','t',
+          'U','V','W','X','Y',  'u','v','w','x','y',
+          'Z','[',']','^','_',  'z','{','}','|','~',
+          '0','1','2','3','4',  '!','#','$','%','&',
+          '5','6','7','8','9',  '(',')','*','+','-',
+          '/','=','@','<','>',  ':',';',' ','Page','OK' ];
+Window_TextInput.LATIN2 =
+        [ 'Á','É','Í','Ó','Ú',  'á','é','í','ó','ú',
+          'À','È','Ì','Ò','Ù',  'à','è','ì','ò','ù',
+          'Â','Ê','Î','Ô','Û',  'â','ê','î','ô','û',
+          'Ä','Ë','Ï','Ö','Ü',  'ä','ë','ï','ö','ü',
+          'Ā','Ē','Ī','Ō','Ū',  'ā','ē','ī','ō','ū',
+          'Ã','Å','Æ','Ç','Ð',  'ã','å','æ','ç','ð',
+          'Ñ','Õ','Ø','Š','Ŵ',  'ñ','õ','ø','š','ŵ',
+          'Ý','Ŷ','Ÿ','Ž','Þ',  'ý','ÿ','ŷ','ž','þ',
+          'Ĳ','Œ','ĳ','œ','ß',  '«','»',' ','Page','OK' ];
+Window_TextInput.RUSSIA =
+        [ 'А','Б','В','Г','Д',  'а','б','в','г','д',
+          'Е','Ё','Ж','З','И',  'е','ё','ж','з','и',
+          'Й','К','Л','М','Н',  'й','к','л','м','н',
+          'О','П','Р','С','Т',  'о','п','р','с','т',
+          'У','Ф','Х','Ц','Ч',  'у','ф','х','ц','ч',
+          'Ш','Щ','Ъ','Ы','Ь',  'ш','щ','ъ','ы','ь',
+          'Э','Ю','Я','^','_',  'э','ю','я','%','&',
+          '0','1','2','3','4',  '(',')','*','+','-',
+          '5','6','7','8','9',  ':',';',' ','','OK' ];
+Window_TextInput.JAPAN1 =
+        [ 'あ','い','う','え','お',  'が','ぎ','ぐ','げ','ご',
+          'か','き','く','け','こ',  'ざ','じ','ず','ぜ','ぞ',
+          'さ','し','す','せ','そ',  'だ','ぢ','づ','で','ど',
+          'た','ち','つ','て','と',  'ば','び','ぶ','べ','ぼ',
+          'な','に','ぬ','ね','の',  'ぱ','ぴ','ぷ','ぺ','ぽ',
+          'は','ひ','ふ','へ','ほ',  'ぁ','ぃ','ぅ','ぇ','ぉ',
+          'ま','み','む','め','も',  'っ','ゃ','ゅ','ょ','ゎ',
+          'や','ゆ','よ','わ','ん',  'ー','～','・','＝','☆',
+          'ら','り','る','れ','ろ',  'ゔ','を','　','カナ','決定' ];
+Window_TextInput.JAPAN2 =
+        [ 'ア','イ','ウ','エ','オ',  'ガ','ギ','グ','ゲ','ゴ',
+          'カ','キ','ク','ケ','コ',  'ザ','ジ','ズ','ゼ','ゾ',
+          'サ','シ','ス','セ','ソ',  'ダ','ヂ','ヅ','デ','ド',
+          'タ','チ','ツ','テ','ト',  'バ','ビ','ブ','ベ','ボ',
+          'ナ','ニ','ヌ','ネ','ノ',  'パ','ピ','プ','ペ','ポ',
+          'ハ','ヒ','フ','ヘ','ホ',  'ァ','ィ','ゥ','ェ','ォ',
+          'マ','ミ','ム','メ','モ',  'ッ','ャ','ュ','ョ','ヮ',
+          'ヤ','ユ','ヨ','ワ','ン',  'ー','～','・','＝','☆',
+          'ラ','リ','ル','レ','ロ',  'ヴ','ヲ','　','英数','決定' ];
+Window_TextInput.JAPAN3 =
+        [ 'Ａ','Ｂ','Ｃ','Ｄ','Ｅ',  'ａ','ｂ','ｃ','ｄ','ｅ',
+          'Ｆ','Ｇ','Ｈ','Ｉ','Ｊ',  'ｆ','ｇ','ｈ','ｉ','ｊ',
+          'Ｋ','Ｌ','Ｍ','Ｎ','Ｏ',  'ｋ','ｌ','ｍ','ｎ','ｏ',
+          'Ｐ','Ｑ','Ｒ','Ｓ','Ｔ',  'ｐ','ｑ','ｒ','ｓ','ｔ',
+          'Ｕ','Ｖ','Ｗ','Ｘ','Ｙ',  'ｕ','ｖ','ｗ','ｘ','ｙ',
+          'Ｚ','［','］','＾','＿',  'ｚ','｛','｝','｜','～',
+          '０','１','２','３','４',  '！','＃','＄','％','＆',
+          '５','６','７','８','９',  '（','）','＊','＋','－',
+          '／','＝','＠','＜','＞',  '：','；','　','かな','決定' ];
+
+Window_TextInput.prototype.initialize = function(editWindow) {
+    var x = editWindow.x;
+    var y = editWindow.y + editWindow.height + 8;
+    var width = editWindow.width;
+    var height = this.windowHeight();
+    Window_Selectable.prototype.initialize.call(this, x, y, width, height);
+    this._editWindow = editWindow;
+    this._page = 0;
+    this._index = 0;
+    this.refresh();
+    this.updateCursor();
+    this.activate();
+};
+
+Window_TextInput.prototype.windowHeight = function() {
+    return this.fittingHeight(9);
+};
+
+Window_TextInput.prototype.table = function() {
+    if ($gameSystem.isJapanese()) {
+        return [Window_TextInput.JAPAN1,
+                Window_TextInput.JAPAN2,
+                Window_TextInput.JAPAN3];
+    } else if ($gameSystem.isRussian()) {
+        return [Window_TextInput.RUSSIA];
+    } else {
+        return [Window_TextInput.LATIN1,
+                Window_TextInput.LATIN2];
+    }
+};
+
+Window_TextInput.prototype.maxCols = function() {
+    return 10;
+};
+
+Window_TextInput.prototype.maxItems = function() {
+    return 90;
+};
+
+Window_TextInput.prototype.character = function() {
+    return this._index < 88 ? this.table()[this._page][this._index] : '';
+};
+
+Window_TextInput.prototype.isPageChange = function() {
+    return this._index === 88;
+};
+
+Window_TextInput.prototype.isOk = function() {
+    return this._index === 89;
+};
+
+Window_TextInput.prototype.itemRect = function(index) {
+    return {
+        x: index % 10 * 42 + Math.floor(index % 10 / 5) * 24,
+        y: Math.floor(index / 10) * this.lineHeight(),
+        width: 42,
+        height: this.lineHeight()
+    };
+};
+
+Window_TextInput.prototype.refresh = function() {
+    var table = this.table();
+    this.contents.clear();
+    this.resetTextColor();
+    for (var i = 0; i < 90; i++) {
+        var rect = this.itemRect(i);
+        rect.x += 3;
+        rect.width -= 6;
+        this.drawText(table[this._page][i], rect.x, rect.y, rect.width, 'center');
+    }
+};
+
+Window_TextInput.prototype.updateCursor = function() {
+    var rect = this.itemRect(this._index);
+    this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+};
+
+Window_TextInput.prototype.isCursorMovable = function() {
+    return this.active;
+};
+
+Window_TextInput.prototype.cursorDown = function(wrap) {
+    if (this._index < 80 || wrap) {
+        this._index = (this._index + 10) % 90;
+    }
+};
+
+Window_TextInput.prototype.cursorUp = function(wrap) {
+    if (this._index >= 10 || wrap) {
+        this._index = (this._index + 80) % 90;
+    }
+};
+
+Window_TextInput.prototype.cursorRight = function(wrap) {
+    if (this._index % 10 < 9) {
+        this._index++;
+    } else if (wrap) {
+        this._index -= 9;
+    }
+};
+
+Window_TextInput.prototype.cursorLeft = function(wrap) {
+    if (this._index % 10 > 0) {
+        this._index--;
+    } else if (wrap) {
+        this._index += 9;
+    }
+};
+
+Window_TextInput.prototype.cursorPagedown = function() {
+    this._page = (this._page + 1) % this.table().length;
+    this.refresh();
+};
+
+Window_TextInput.prototype.cursorPageup = function() {
+    this._page = (this._page + this.table().length - 1) % this.table().length;
+    this.refresh();
+};
+
+Window_TextInput.prototype.processCursorMove = function() {
+    var lastPage = this._page;
+    Window_Selectable.prototype.processCursorMove.call(this);
+    this.updateCursor();
+    if (this._page !== lastPage) {
+        SoundManager.playCursor();
+    }
+};
+
+Window_TextInput.prototype.processHandling = function() {
+    if (this.isOpen() && this.active) {
+        if (Input.isTriggered('shift')) {
+            this.processJump();
+        }
+        if (Input.isRepeated('cancel')) {
+            this.processBack();
+        }
+        if (Input.isRepeated('ok')) {
+            this.processOk();
+        }
+    }
+};
+
+Window_TextInput.prototype.isCancelEnabled = function() {
+    return true;
+};
+
+Window_TextInput.prototype.processCancel = function() {
+    this.processBack();
+};
+
+Window_TextInput.prototype.processJump = function() {
+    if (this._index !== 89) {
+        this._index = 89;
+        SoundManager.playCursor();
+    }
+};
+
+Window_TextInput.prototype.processBack = function() {
+    if (this._editWindow.back()) {
+        SoundManager.playCancel();
+    }
+};
+
+Window_TextInput.prototype.processOk = function() {
+    if (this.character()) {
+        this.onTextAdd();
+    } else if (this.isPageChange()) {
+        SoundManager.playOk();
+        this.cursorPagedown();
+    } else if (this.isOk()) {
+        this.onTextOk();
+    }
+};
+
+Window_TextInput.prototype.onTextAdd = function() {
+    if (this._editWindow.add(this.character())) {
+        SoundManager.playOk();
+    } else {
+        SoundManager.playBuzzer();
+    }
+};
+
+Window_TextInput.prototype.onTextOk = function() {
+    if (this._editWindow.finaltext() === '') {
+        if (this._editWindow.restoreDefault()) {
+            SoundManager.playOk();
+        } else {
+            SoundManager.playBuzzer();
+        }
+    } else {
+        SoundManager.playOk();
+        this.callOkHandler();
+    }
+};
