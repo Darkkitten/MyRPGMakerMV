@@ -53,7 +53,7 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 			else{
 				Darkkitten.Param.varId = Number(Darkkitten.Parameters['Text Variable']);
 				Darkkitten.Param.maxLength = Number(Darkkitten.Parameters['Max Characters']);
-				Darkkitten.Param.defaultPromptText = String(Darkkitten.Parameters['Default Header']);
+				Darkkitten.Param.defaultPromptText = String("default" + Darkkitten.Parameters['Default Header']);
 				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
 				SceneManager.push(Scene_Input);
 			}
