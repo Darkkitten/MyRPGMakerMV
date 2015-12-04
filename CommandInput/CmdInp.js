@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v0.9.1 Enables a Command Input system.
+ * @plugindesc v1.0.0 Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -38,11 +38,13 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
     getInformation_pluginCommand.call(this, command, args);
     if (command === "enter_text") {
         if(args != null){
-			//Darkkitten.Parm.Text_Variable = args[0];
 			Darkkitten.Param.varId = Number(args[0]);
 			Darkkitten.Param.maxLength = Number(args[1]);
-			for (i = 2; i <args.length; i++){
-				Darkkitten.Param.defaultPromptText = String(args[i]+" ");
+			
+			
+			for (i = 2; i < args.length; i++){
+				//Darkkitten.Param.defaultPromptText += args[i].split(" ").replace("undefied","");
+				 Darkkitten.Param.defaultPromptText += args[i]+ " ";
 				}
 				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
 				SceneManager.push(Scene_Input);
@@ -50,8 +52,8 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 			}
 			else{
 				Darkkitten.Param.varId = Number(Darkkitten.Parameters['Text Variable']);
-				Darkkitten.Parameters.maxLength = Number(Darkkitten.Parameters['Max Characters']);
-				Darkkitten.Parameters.defaultPromptText = String(Darkkitten.Parameters['Default Header']+" ");
+				Darkkitten.Param.maxLength = Number(Darkkitten.Parameters['Max Characters']);
+				Darkkitten.Param.defaultPromptText = String(Darkkitten.Parameters['Default Header']);
 				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
 				SceneManager.push(Scene_Input);
 			}
@@ -185,7 +187,7 @@ Window_TextEdit.prototype.back = function() {
 }
 
 Window_TextEdit.prototype.DefaultTextWidth = function(){
-	return Darkkitten.Param.maxLength;
+	return (Darkkitten.Param.maxLength + 40);
 }
 
 Window_TextEdit.prototype.charWidth = function() {
@@ -201,8 +203,9 @@ Window_TextEdit.prototype.left = function() {
 
 Window_TextEdit.prototype.itemRect = function(index) {
     return {
-        x: this.left() + index * this.charWidth(),
-        y: 36,
+        //x: this.left() + index * this.charWidth(),
+        x: index * this.charWidth(),
+        y: 70,
         width: this.charWidth(),
         height: this.lineHeight()
     }
@@ -238,7 +241,7 @@ Window_TextEdit.prototype.drawChar = function(index) {
 
 Window_TextEdit.prototype.refresh = function() {
     this.contents.clear();
-	this.drawTextEx(Darkkitten.Param.defaultPromptText, 0 , this.lineHeight());
+	this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0 , this.lineHeight());
     for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     	this.drawUnderline(i);
     }
