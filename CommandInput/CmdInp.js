@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v1.0.0 Enables a Command Input system.
+ * @plugindesc v1.0.1 Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -31,6 +31,10 @@
 var Darkkitten = Darkkitten || {};
 Darkkitten.Parameters = PluginManager.parameters('CmdInp');
 Darkkitten.Param = Darkkitten.Param || {};
+
+var Imported = Imported || {};
+Imported.CmdInp = true;
+
 
 //Get Plugin Command Variables if not default.
 var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
@@ -326,7 +330,7 @@ Window_TextInput.JAPAN3 =
 
 Window_TextInput.prototype.initialize = function(editWindow) {
     var x = editWindow.x;
-    var y = editWindow.y + editWindow.height + 8;
+    var y = editWindow.y + editWindow.height + 10;
     var width = editWindow.width;
     var height = this.windowHeight();
     Window_Selectable.prototype.initialize.call(this, x, y, width, height);
