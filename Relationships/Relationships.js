@@ -59,8 +59,10 @@
 // Import 'Relationship System' 
 var Darkkitten = Darkkitten || {};
 Darkkitten["Config"] = Darkkitten["Config"] || {};
-//Darkkitten["Relationships"] = 1.0.0;
 Darkkitten["Config"]["RelationshipSystem"] = PluginManager.parameters("Relationships");
+var Imported = Imported || {};
+Imported.Relationships = true;
+
 
 // Initialize global Relationship variables
 var $dataRelationships = null;
