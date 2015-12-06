@@ -1,13 +1,4 @@
-	this.name = relationshipData.name; //Name of the Person your in relationship with.
-	this.current_status = relationshipData.current_status; //Current Status of your Relationship
-	this.desc = relationshipData.desc; //NPC Description, Etc
-	this.face = relationshipData.face; //FaceSet to use
-	this.relationshpLevel = $gameVariables.value(relationshipData.level); //Game Viarable from Database
-	this.likes = relationshipData.likes; //Item Variable from Database
-	this.dislikes = relationshipData.dislikes; //Item Variable from Database
-	this.location = $gameMap.event(relationshipData.location);
 [
-	[],
 	{
 		"id": 1,
 		"face": People1, 2,
