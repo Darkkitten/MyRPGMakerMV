@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v1.0.1 Enables a Command Input system.
+ * @plugindesc v1.0.2 Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -108,8 +108,19 @@ Scene_Input.prototype.CIW = function() {
 }
 
 Scene_Input.prototype.onThatsJustFine = function() {
-	$gameVariables.setValue(Darkkitten.Param.varId, this._editTextWindow.finaltext());
-	console.log("\Final Text:" + this._editTextWindow.finaltext());
+	
+	var str = this._editTextWindow.finaltext();
+	var re = new RegExp(str, "i")
+	//console.log(re.test(str));
+	
+	//var _textout = new RegExp(this._editTextWindow.finaltext(), "i");
+	
+	$gameVariables.setValue(Darkkitten.Param.varId, re.source);	
+	console.log(re.source);
+	//console.log(_textout);
+
+
+	//console.log("\Final Text:" + this._editTextWindow.finaltext());
 	this.popScene();
 }
 
@@ -208,7 +219,7 @@ Window_TextEdit.prototype.left = function() {
 Window_TextEdit.prototype.itemRect = function(index) {
     return {
         //x: this.left() + index * this.charWidth(),
-        x: index * this.charWidth(),
+        x: this.left() + index * this.charWidth(),
         y: 70,
         width: this.charWidth(),
         height: this.lineHeight()
@@ -240,12 +251,12 @@ Window_TextEdit.prototype.drawChar = function(index) {
     var rect = this.itemRect(index);
     this.resetTextColor();
     this.drawText(this._text[index] || '', rect.x, rect.y);
-    console.log("\n drawChar: "+this._text + " Index: " + index+"\n");
+    //console.log("\n drawChar: "+this._text + " Index: " + index+"\n");
 }
 
 Window_TextEdit.prototype.refresh = function() {
     this.contents.clear();
-	this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0 , this.lineHeight());
+	this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), this.left() , this.lineHeight());
     for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     	this.drawUnderline(i);
     }
