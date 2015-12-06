@@ -34,10 +34,10 @@
  * Default Mastered
  * @default Mastered
  *
- * @param Use Polarities
- * @desc Use Polarities. If true will display a gague with Love/hate Polarities, if it is False a normal gague will be used.
- * Default true
- * @default true
+ * @param Face
+ * @desc Which face Graphics to use?.
+ * Default Package1
+ * @default Package1
  *
  * @param Use Liked and Disliked Items
  * @desc Hide Liked and Disliked Items or Not, true = hide, false = show
@@ -55,589 +55,741 @@
  * @default true
  *
 */
-
-var Imported = Imported || {};
-Imported.Relationships = true;
-
+ 
+ // Import 'Quest System' 
 var Darkkitten = Darkkitten || {};
-Darkkitten.Parameters = PluginManager.parameters('Relationships');
-Darkkitten.Param = Darkkitten.Param || {};
+Darkkitten["Config"] = Darkkitten["Config"] || {};
+Darkkitten["Relationships"] = 1.0.0;
+Darkkitten["Config"]["RelationshipSystem"] = PluginManager.parameters("Relationships");
 
-var Use_Custom_Background = Darkkitten.Parameters['Use_custom_Background'];
-var Background = Darkkitten.Parameters['Relationship Background Image'];
-var Window_Title = Darkkitten.Parameters['Window Title'];
-var Use_Leveling_System = Darkkitten.Parameters['Use Leveling System']
-var Terms_Of_Feelings[] = Darkkitten.Parameters['Terms Of Feelings'];
-var Term_Of_Mastered = Darkkitten.Parameters['Term Of Mastered'];
-//var Use_Polarities = Darkkitten.Parameters['Use Polarities'];
-var Use_Title = Darkkitten.Parameters['Use Title'];
-var Use_Liked_and_Disliked_Items = Darkkitten.Parameters['Use Liked and Disliked Items'];
-var Hidden = Darkkitten.Parameters['Hidden Text'];
+// Initialize global Relationship variables
+var $dataRelationships = null;
+var $gameRelationships = null;
 
-var $Relationship_info = null;
-var $Relationship_data = null;
 
-var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
-Game_Interpreter.prototype.pluginCommand = function(command, args) {
-    getInformation_pluginCommand.call(this, command, args);
-   	if (command === 'Relationships'){
-		switch (args[0].toLowerCase()){
-			case 'open':
-			SceneManager.push(Scene_Relationships);
-			break;
-			case 'add':
-			$gameParty.addRelationship(Number(args[1]));
-			break;
-			case 'status_liked':
-			//$gameSystem.change_status(args[1], args[2]);	
-			break;
-			case 'status_loved':
-			$relationshipData.get(Number(args[1])).liked();
-			break;
-			case 'status_none':
-			$relationshipData.get(Number(args[1])).none(;
-			break;
-			case 'status_hated':
-			$relationshipData.get(Number(args[1)).hated();
-			break;
-			case 'status_disliked':
-			$relationshipData.get(Number(args[1])).disliked();
-			break;
-			case 'status_mastered':
-			$relationshipData.get(Number(args[1])).mastered();
-			break;
-			case 'liked_item':
-			//Add Change Liked Items here..
-			break;
-			case 'diskliked_item':
-			//Add Change Disliked Litems here..
-			break;
-		}
-	}
-};
-   
-//Load Relationship_info	
+// Load Relationship data
 DataManager._databaseFiles.push(
-	{name: "$Relationship_info", src: "Relationships.json"}
+    {name: "$dataRelationships", src: "Relationships.json"}
+    
 );
-	
-Darkkitten.Param.Data_Initialize = DataManager.createGameObjects;
-Darkkitten.Param.Save_Data = DataManager.makeSaveContents;
-Darkkitten.Param.Lad_Data = DataManager.extractSaveContents;
-Darkkitten.Param.Party_Initalize = Game_Party.prototype.initialize;
-	
-//DataManager	
-DataManager.makeSaveContents = function(){
-	contents = Darkkitten.Param.Save_Data.call(this);
-	//Include the Relationship_info in the save file
-	contents.relationships = $Relationship_info;
-	return contents;
-};
-	
-DataManager.extractSaveContents = function(contents){
-	Darkkitten.Param.Lad_Data.call(this, contents);
-	//load them in 
-	$Relationship_info = contents.relationship_info;
-};
-	
-DataManager.createGameObjects = function(){
-	Darkkitten.Param.Data_Initialize.call(this);
-	//create Global Relationship_info
-	$Relationship_info = new Game_Relationship();
-};
-	
-//Game_Party
-Game_Party.prototype.initialize = function(){
-	Darkkitten.Param.Party_Initalize.call(this);
-	// Inititalize Relationship Data
-	this.relationships = [];
-};
-	
-Game_Party.prototype.addRelationship = function(relationshipID){
-	//Do you already have this Relationship?
-	if (this.relationships.indexOf(realationshipID) < 0) {
-		//if not, give that crap to them. They don't have a choice now.
-		this.relationships.push(relationshipID);
-	}
-};
 
-//REturns the total number of Relationships you have.
-Game_Party.prototype.totalRelationships = function(){
-	//Cycle through all Relationships
-	var count = 0;
-	for (var i = 0; i < this.relationships.length; i++){
-		var r = $Relationship_info.get(this.relationships[i]);
-		count++;
-	}
-	return count;
-};
-	
-// Get Alll Relationship Id's
-Game_Party.prototype.getRelationships = function(){
-	//Time to cycle through Relationships
-	var data = [];
-	for (var i = 0; i < this.relationships.length; i++ ){
-		var r = $Relationship_info.get(this.relationships[i]);
-		//data.push(q.relationshipId);
-	}
-	return data;
-};
-	
-Game_Party.prototype.getRelationship = function(index){
-	return $Relationship_info.get(this.relationships[index]);
-};
-	
-//Useless...
-Game_Party.prototype.hasRelationship = function(relationshipID){
-	//returns weather or not they have relationship
-	return this.relationships.indexOf(relationshipID) > -1;
-};
-	
-//This checks a list of Relationships 
-Game_Party.prototype.hasRelationships = function(relationships){
-	flag = true;
-	for var i = 0; relationships.length; i++) {
-		if (!this.hasRelationship(relationships[i]))
-		flag = false;
-	}
-	return flag;
-}
-	
-//Relationship_Info
-function Game_Relationship() {
-	this.initialize.apply(this, arguments);
-};
-	
-Game_Relationship.prototype.initialize = function(relationshipID){
-	var relationshipData = $Relationship_data[relationshipID];
-	this.relationshipId = relationshipID;
-	this.rawData = relationshipData;
-	this.name = relationshipData.name; //Name of the Person your in relationship with.
-	this.current_status = relationshipData.current_status; //Current Status of your Relationship
-	this.desc = relationshipData.desc; //NPC Description, Etc
-	this.face = relationshipData.face; //FaceSet to use
-	this.relationshpLevel = $gameVariables.value(relationshipData.level); //Game Viarable from Database
-	this.likes = relationshipData.likes; //Item Variable from Database
-	this.dislikes = relationshipData.dislikes; //Item Variable from Database
-	this.location = $gameMap.event(relationshipData.location);
-	//this.location = relationshipData.location; //Event Location from Database
-	//Todo: App Polarities
-};
-
-//ToDo: All Relationship Level Rewards
-Game_RelationShip.prototype.giveRewards= function() {
-	for (var i = 0; i < this.rewards.length; i++){
-			
-	}
-};
-	
-//Status Information.
-//Hated, Disliked, None, Liked, Loved
-Game_Relationship.prototype.mastered = function(){
-	return this.current_status == Term_Of_Mastered;
-}
-	
-Game_Relationship.prototype.liked = function(){
-	return this.current_status == Terms_Of_Feelings[3];
-}
-	
-Game_Relationship.prototype.hated = function(){
-	return this.current_status == Terms_Of_Feelings[0];
-}
-	
-Game_Relationship.prototype.disliked = function(){
-	return this.current_status == Terms_Of_Feelings[1];
-}
-	
-Game_Relationship.prototype.none = function() {
-	return this.current_status == Terms_Of_Feelings[2];
-};
-	
-Game_Relationship.prototype.loved = function(){
-	return this.current_status == Terms_Of_Feelings[4];
-};
-	
-//Game_Relationships
-function Game_Relationships() {
-	this.initalize.apply(this, arguments);
-};
-	
-Game_Relationships.prototype.initialize = function(){
-	this.data[];	
-};
-	
-Game_Relationships.prototype.get = function(relationshipID){
-		if ($relationshipData[relationshipID]){
-		if (!this.data[relationshipID]){	
-			this.data[relationshipID] = new Game_Relationship(relationshipID);
-		}
-		return this.data[relationshipID];
-	}
-	return null;
-};
-	
-Game_Relationships.prototype.totalRelationships = function(){
-	//returns a list of All relationships
-	for (var i = 0;i < $relationshipData.length; i++){
-		var r = this.get(this.relationships[i]);
-	}
-	return data;
-};
-	
-//Window_Base
-Window_Base.prototype.sliceText = function(){
-	var words = text.split(" ");
-	if (words.length === 1)
-	return words;
-	var result = [];
-	var currenttext = words.shift();
-	for (var i = 0; words.legnth; i++){
-			
-		var word = words[i];
-		var textW = this.contents.measureTextWidth(current_text + " "+ word);
-		if (TextW > wdith){
-			retult.push(current_text);
-			current_text = word;
-		} else {
-			current_text += " " + word;
-		}
-	if (i >= words.length - 1)
-		resault.push(current_text)
-	}
-	return result;
-}
-	
-//Window_RelationshipInfo
-function Window_RelationshipInfo() {
-	this.initialize.apply(this, arguments);	
-}
-	
-Window_RelationshipInfo.prototype = Object.create(Window_Selectable.prototype);
-Window_RelationshipInfo.prototype.constructor = Window_RelationshipInfo;
+//---------------------------------------------------------------------------------------------
+// Alias methods
+//---------------------------------------------------------------------------------------------
+    Darkkitten_Party_Initialize = Game_Party.prototype.initialize;
+    Darkkitten_Data_Initialize  = DataManager.createGameObjects;
+    Darkkitten_Save_Data        = DataManager.makeSaveContents;
+    Darkkitten_Load_Data        = DataManager.extractSaveContents;
+    Darkkitten_Plugin_Commands  = Game_Interpreter.prototype.pluginCommand;
     
-Window_RelationshipInfo.prototype.initialize = function(){
-    var FaceImage = Face;
-    //var FaceID = Number(Face[1]);
-    this.Face = ImageManager.loadFace(FaceImage);
-	this.relationship = 0;
-	this.offY = 0;
-	this.lineY = 0;
-	this.resizeFlag = false;
-	Window_Selectable.prototype.initialize.call(this, 0 : 320, 0, Graphics.boxWidth -320, Graphics.boxHeight);
-	this.relationshipBitmap = new Bitmap(this.contentsWidth(), this.contentsHeight());
-	this.refresh();
-};
+//---------------------------------------------------------------------------------------------
+// Plugin Commands
+//---------------------------------------------------------------------------------------------
+    Game_Interpreter.prototype.pluginCommand = function(command, args) {
+        Darkkitten_Plugin_Commands.call(this, command, args);
+        if (command.toLowerCase() === "relationship") {
+            switch (args[0].toLowerCase()) {
+            case 'open':
+                SceneManager.push(Scene_Relationship);
+                break;
+            case 'add':
+                $gameParty.addRelationship(Number(args[1]));
+                break;
+                //TODO: Add Change Status code.
+            }
+        }
+    };
+//---------------------------------------------------------------------------------------------
+// DataManager
+//---------------------------------------------------------------------------------------------
+    DataManager.makeSaveContents = function() {
+        contents = Darkkitten_Save_Data.call(this);
+        // Include the quests in the save file
+        contents.quests = $gameRelationships;
+        return contents;
+    };
+    
+    DataManager.extractSaveContents = function(contents) {
+        Darkkitten_Load_Data.call(this, contents);
+        // Then take them back because we really don't trust banks
+        $gameRelationships = contents.quests;
+    };
+    
+    DataManager.createGameObjects = function() {
+        Darkkitten_Data_Initialize.call(this);
+        // Create global quests
+        $gameRelationships = new Game_Relationships();
+    };
+    
+//---------------------------------------------------------------------------------------------
+// Game_Party
+//---------------------------------------------------------------------------------------------
+    Game_Party.prototype.initialize = function() {
+        Darkkitten_Party_Initialize.call(this);
+        // Initialize quest data
+        this.relationships = [];
+    };
+    
+    Game_Party.prototype.addQuest = function(relationship_id) {
+        // Does party already have quest?
+        if (this.relationships.indexOf(relationship_id) < 0) {
+            // If not, give that crap to them. They don't have a choice now.
+            this.relationships.push(relationship_id);
+        }
+    };
+    
+    // Removes the quest from the party. NOTE: This does NOT reset the quest
+    Game_Party.prototype.removeQuest = function(relationship_id) {
+        // Check if quest exists
+        if (this.relationships.indexOf(relationship_id) > -1) {
+            // I was wrong...
+            var index = this.relationships.indexOf(relationship_id);
+            this.relationships.splice(index, 1);
+        }
+    };
+    
+    // Returns total number of quests the party has
+    // filter can be "all", "progress" "completed" or "failed"
+    Game_Party.prototype.totalQuests = function(filter) {
+        // Returns a list of ALL quests
+        if (filter === undefined || filter === "all")
+            return this.relationships.length;
+        // Time to cycle through quests....(dammit, I did this exact thing in the quest list window)
+        var count = 0;
+        for (var i = 0; i < this.relationships.length; i++) {
+            var q = $gameQuest.get(this.relationships[i]);
+            if (q.status === filter.toLowerCase())
+                count++;
+        }
+        return count;
+    };
+    
+    // Gets all quest id's 
+    Game_Party.prototype.getRelationships = function(filter) {
+        // Returns a list of ALL quests
+        if (filter === undefined || filter === "all")
+            return this.relationships;
+        // Time to cycle through quests....(dammit, I did this exact thing in the quest list window)
+        var data = [];
+        for (var i = 0; i < this.relationships.length; i++) {
+            var q = $gameQuest.get(this.relationships[i]);
+            if (q.status === filter.toLowerCase())
+                data.push(q.relationshipId);
+        }
+        return data;
+    };
+    
+    // This method is actually extremely useless. Ignore it for now.
+    Game_Party.prototype.getQuest = function(index) {
+        return $gameRelationships.get(this.relationships[index]);
+    };
+    
+    Game_Party.prototype.hasQuest = function(relationship_id){
+        // Returns whether or not they have the quest
+        return this.relationships.indexOf(relationship_id) > -1;
+    };
+    
+    // This checks a list of relationships and its status.
+    // If the party has all and they match the input filter, it returns true
+    // Used to check a range of relationships completion
+    Game_Party.prototype.hasRelationships = function(relationships, filter) {
+        flag = true;
+        for (var i = 0; i < relationships.length; i++) {
+            if (!this.hasQuest(relationships[i]))
+                flag = false;
+            if ($gameRelationships.get(relationships[i]).status !== filter)
+                flag = false;
+        }
+        return flag;
+    }
+    
+//---------------------------------------------------------------------------------------------
+// Game_Relationship
+//---------------------------------------------------------------------------------------------
+    function Game_Relationship() {
+        this.initialize.apply(this, arguments);
+    };
+    
+    Game_Relationship.prototype.initialize = function(relationshipId) {
+        var relationshipsData = $dataRelationships[relationshipId];
+        this.relationshipId = relationshipId;
+        this.rawData = relationshipsData;
+        this.cat = relationshipsData.cat;
+        this.name = relationshipsData.name;
+        this.relationshiplvl = $gameVariable.value(relationshipData.levelvar);
+        this.desc = relationshipsData.desc;
+        this.likes = relationshipsData.likes;
+        this.dislikes = relationshipsData.dislikes;
+        this.location = relationshipData.eventid;
+        this.current_status = "Unknown";
+        var rlevel = relationshipData.levelvar;
+    };
+    
+    
+    Game_Relationship.prototype.mastered = function() {
+        return this.current_status == "Mastered";
+    };
+    
+    Game_Relationship.prototype.isKnown = function() {
+        return this.current_status == "Known";
+    };
+    
+    Game_Relationship.prototype.hated = function() {
+        return this.current_status == "Hated";
+    };
+    
+    Game_Relationship.prototype.loved = function() {
+        this.current_status = "Loved";
+    };
+    
+    Game_Relationship.prototype.isUnknown = function(){
+		return this.current_status == "Unknown";
+	};
 	
-Window_RelationshipInfo.prototype.setRelationship = function(relationshipID){
-	this.relationship = relationshipID;
-	this.offY = 0;
-	this.resizeFlag = false;
-	this.createRelationshipBitmap();
-	this.refresh();
-};
+	Game_Relationship.prototype.disliked == function(){
+		return this.current_status == "Disliked";
+	};
 	
-Window_RelationshipInfo.prototype.refresh = function(){
-	this.contents.clear();
-	if (this.relationship > 0) {
-		this.contents.blt(this.relationshipBitmap, 0, this.offY, this.contentsWidth(), this.contentsHeight(), 0, 0, this.contentsWidth(), this.contentsHeight());
-	}
-}
-	
-//this function is used to keep track of the height of the bitmap.
-Window_RelationshipInfo.prototype.write = function(){
-	if(this.lineY > this.relationship.Bitmap.height) {
-		this.relationshipBitmap.resize(this.relationshipBitmap.width, this.lineY);
-		this.resizeFlag = true;
-	}
-}
-	
-Window_RelationshipInfo.prototype.createRelationshipBitmap = function(){
-	this.relationshipBipmap.clear();
-	this.relationshipBitmap.paintOpacity = 128;
-	this.relationshipBitmap.blt(this.Face, 0, 0 this.Face.width, this.Face.height, this.contentsWidth() / 2 - this.Face.width, this.contentsHeight() / 2- this.Face.height / 2);
-	if (this.relationship > 0){
-		this.relationshipBitmap.paintOpacity = 255;
-		var q = $RelationshipData.get(this.relationship);
-		this.drawRelationshipInfo(q);
-		this.drawRelationhipLikesDislikes(q);
-	}
-	//Check for resize, then redraw
-	if (this.resizeFlag){	
-		this.resizeFlag = false;
-		this.createRelationshipBitmap();
-	}
-};
-	
-Window_RelationshipInfo.prototype.drawRelationshipInfo = function(q){
-	var headerX = 0;
-	this.relationshipBitmap.paintOpacity = 255;
-	this.lineY = 0;
-	this.relationshipBitmap.textColor = this.systemColor();
-	this.relationshipBitmap.drawText(r.name, headerX, this.lineY, this.contentsWidth(), this.contentsHeight());
-	this.write();
-	this.relationshipBitmap.textColor = this.normalColor();
-	var lines = this.sliceText(r.desc, this.contentsWidth());
-	for (var i = 0; i < lines.length; i++){
-		this.relationshipBitmap.drawText(lines[i], 0, this.lineY, this.contentsWidth(), this.lineHeight());
-		this.write();
-	}
-	this.drawHorzLine(this.lineY);
-	this.write();
-}
-	
-Window_RelationshipInfo.prototype.drawRelationhipLikesDislikes == function(r){
-	var bullet = String("-") + " ";
-	//Liked Items.
-	this.relationshipBitmap.textColor = systemColor();
-	this.questBitmap.drawText("Likes"), 0 this.lineY, this.contentsWidth(), this.lineHeight());
-	this.write();
-	this.relationshipBitmap.textColor = this.normalColor();
-	for (var i = 0; r.likes.length; i++){
-		var likes = r.likes[i];
-		if (like[3] === true && r.current_status !== mastered){
-			this.relationshipBitmap.drawText(bullet + Hidden, 0, this.lineY, this.contentsWidth(), this.lineHeight());
-			this.write();
-			continue;
-		}
-	}
-	var item = null;
-	var done = (r.current_status === mastered);
-	this.relationshipBitmap.paintOpacity = done ? 160 : 255
-	switch(like[0]){
-		case "item":
-		item = $dataItems[likes[1]];
-		this.drawItemName(item, this.coents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
-		this.write();
-		break;
-	}
-	//Disliked Items.
-	this.questBitmap.drawText("Dislikes"), 0 this.lineY, this.contentsWidth(), this.lineHeight());
-	this.write();
-	this.relationshipBitmap.textColor = this.normalColor();
-	for (var i = 0; r.dilsikes.length; i++){
-		var dislikes = r.dislikes[i];
-		if (dislike[3] === true && r.current_status !== mastered){
-				this.relationshipBitmap.drawText(bullet + Hidden, 0, this.lineY, this.contentsWidth(), this.lineHeight());
-				this.write();
-			continue;
-		}
-	}
-		var item = null;
-		var done = (q.current_status === mastered);
-		this.relationshipBitmap.paintOpacity = done ? 160 : 255
-		switch(dislike[0]){
-		case "item":
-		item = $dataItems[dislikes[1]];
-		this.drawItemName(item, this.coents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
-		this.write();
-		break;
-	}
-};
+    Game_Relationship.prototype.liked == function(){
+    	return this.current_status == "Liked";
+    };
+    
+    Game_Relationship.prototype.reset = function(levelvari) {
+        this.current_status = "none";
+        this.relationshiplvl = 0;
+        $gameVariable.setValue(this.rlevel, 0);
+        
+    };
 
-Window_RelationshipInfo.prototype.drawItemName = function(item, x, y, width){
-	width = width || 312;
-	if (item){
-		var iconboxWidth = Window_Base._iconWidth + 8;
-		this.relationshipBitmap.textColor = this.normalColor();
-		this.drawIcon(item.iconIndex, x - 2, y + 2);
-		this.relationshipBitmap.drawText(item.name, x, iconBoxWidth, y width - iconBoxWidth, this.lineHeight());
-	}
-};
-
-Window_RelationshipInfo.prototype.drawIcon = function(ionIndex, x, y){
-	var bitmap = ImageManager.loadSystem('IconSet');
-	var pw = Window_Base._iconWidth;
-	var ph = Window_Base._iconHeight;
-	var sx = iconIndex % 16 * pw;
-	var sy = Math.floor(iconIndex / 16) * ph;
-	this.relationshipBitmap.blt(bitmap, sx, sy, pw, ph, x, y);
-};
-	
-Window_RelationshipInfo.prototype.drawHorzLine = function(y){
-	var lineY = y + this.lineHeight() / 2 - 1;
-	this.relationshipBitmap.paintOpacity = 48;
-	this.relationshipBitmap.fillRect(0, lineY, this.contentsWidth(), 2, this.normalColor());
-	this.relationshipBitmap.paintOpacity = 255;
-};
-	
-Window_RelationshipInfo.prototype.updateArrows = function(){	
-	this.downArrowVisable = (this.relationshipBitmap.height > this.contentsHeight() && this.offY < this.relationshipBitmap.height - this.contentsHeight());
-	this.upArrowVisable = this.offY > 0;
-};
-	
-// Override the arrow key controls so we can scroll instead, let's be honest, that's way cooler
-Window_RelationshipInfo.prototype.isCursorMovable = function() {
-	return (this.isOpenAndActive());
-};
-
-Window_RelationshipInfo.prototype.cursorDown = function(wrap) {
-    if (this.relationshipBitmap.height > this.contentsHeight() && this.offY < this.relationshipBitmap.height - this.contentsHeight()) {
-        SoundManager.playCursor();
-        this.offY += this.lineHeight() + this.textPadding();
-		this.refresh();
-	}
-};
-
-Window_RelationshipInfo.prototype.cursorUp = function(wrap) {
-    if (this.offY > 0) {
-    SoundManager.playCursor();
-    this.offY -= this.lineHeight() + this.textPadding();
-    if (this.offY < 0)
+//---------------------------------------------------------------------------------------------
+// Game_Relationships
+//---------------------------------------------------------------------------------------------
+    function Game_Relationships() {
+        this.initialize.apply(this, arguments);
+    };
+    
+    Game_Relationships.prototype.initialize = function() {
+        this.data = [];
+    };
+    
+    Game_Relationships.prototype.get = function(relationship_id) {
+        if ($dataRelationships[relationship_id]) {
+            if (!this.data[relationship_id]) {
+                this.data[relationship_id] = new Game_Relationship(relationship_id);
+            }
+            return this.data[relationship_id];
+        }
+        return null;
+    };
+    
+    Game_Relationships.prototype.categories = function() {
+        if ($dataRelationships[0])
+            return $dataRelationships[0];
+        return null;
+    };
+    
+    Game_Relationships.prototype.totalQuests = function(filter) {
+        // Returns a list of ALL quests
+        if (filter === undefined || filter === "all")
+            return $dataRelationships.length;
+        // Time to cycle through quests....(dammit, I did this exact thing in the quest list window)
+        var count = 0;
+        for (var i = 0; i < $dataRelationships.length; i++) {
+            var q = this.get(this.relationships[i]);
+            if (q.status === filter.toLowerCase())
+                count++;
+        }
+        return data;
+    };
+//---------------------------------------------------------------------------------------------
+// Window_Base
+//---------------------------------------------------------------------------------------------
+    Window_Base.prototype.sliceText = function(text, width) {
+        var words = text.split(" ");
+        if (words.length === 1)
+            return words;
+        var result = [];
+        var current_text = words.shift();
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
+            var textW = this.contents.measureTextWidth(current_text + " " + word);
+            if (textW > width) {
+                result.push(current_text);
+                current_text = word;
+            } else {
+                current_text += " " + word;
+            }
+            if (i >= words.length - 1)
+                result.push(current_text) 
+        }
+        return result
+    }
+//---------------------------------------------------------------------------------------------
+// Window_RelationshipInfo
+//---------------------------------------------------------------------------------------------
+    function Window_RelationshipInfo() {
+        this.initialize.apply(this, arguments);
+    }
+    
+    Window_RelationshipInfo.prototype = Object.create(Window_Selectable.prototype);
+    Window_RelationshipInfo.prototype.constructor = Window_RelationshipInfo;
+    
+    Window_RelationshipInfo.prototype.initialize = function() {
+        var xx = 320;
+        //this.failedImg = GameusScripts["Config"]["QuestSystem"]["Failed Image"] || '';
+        this.faceImg = Darkkitten["Config"]["RelationshipSystem"]["Face"] || '';
+        if (this.faceImg !== '')
+            this.faceImg = ImageManager.loadFace(this.faceImg, 0);
+        this.relationship = 0;
         this.offY = 0;
-		this.refresh();
-	}
-};
+        this.lineY = 0;
+        this.resizeFlag = false;
+        Window_Selectable.prototype.initialize.call(this, xx, 0, Graphics.boxWidth - 320, Graphics.boxHeight);
+        this.relationshipBitmap = new Bitmap(this.contentsWidth(), this.contentsHeight());
+        this.refresh();
+    };
     
-Window_RelationshipInfo.prototype.cursorPagedown = function() {
-	this.cursorDown();
-};
-
-Window_RelationshipInfo.prototype.cursorPageup = function() {
-	this.cursorUp();
-};
-
-Window_RelationshipInfo.prototype.cursorRight = function(wrap) {
-	// We are basically...
-};
-
-Window_RelationshipInfo.prototype.cursorLeft = function(wrap) {
-	// ...screwing the system
-};
-	
-function Window_Relationships(){
-	this.initialize.apply(this, arguments);
-};
-	
-Window_Relationships.prototype = Object.create(Window_Command.prototype);
-Window_Relationships.prototype.constructor = Window_Relationships;
-	
-Window_Relationships.prototype.initialize = function(){
-	var xx = 0;
-	var yy = 0;
-	//Stores all relationships from $gameParty
-	this.qFilters = ["all"];
-	this.filterIndex = 0;
-	this.data = [];
-		
-	this.filter = "all";
-	this.refreshRelationships();
-	Window_Command.prototype.initialize.call(this, xx, yy);
-				
-};
-	
-Window_Relationships.prototype.windowWidth = function(){
-	return 320;
-};
-	
-Window_Relationships.prototype.numVisibleRows = function(){
-	return 10;
-};
-	
-Window_Relationships.prototype.windowHeight = function(){
-	return Graphics.boxHeight - this.fittingHeight(1))	
-}
-	
-Window_Relationships.prototype.drawItem = function(index){
-	var item = this._list[index];
-	var rect = this.itemRectForText(index);
-	var align = this.itemTextAlign();
-	this.resetTextColor(;
-	this.changePaintOpacity(this.isCommandEnabled(index))
-	var tempX = 0;
-	if (item.symbol === "relationships") {
-		var r = $relationshipData.get(Number(item.ext));
-	}	
-	this.drawText(this.commandName(index), rect.x + tempX / 2, rect.y, rect.width, align);
-};
-	
-Window_Relationships.prototype.relationshipData = function(relationshipID){
-	return $relationshipData.get(relationshipID);
-};
-	
-Window_Relationships.prototype.refreshRelationships = function(){
-	this.data = $gameparty.getRelationships();
-	this.counter = [];
-	for (var i = 0; i < this.data.length; i++){
-		var r = $relationshipData.get(this.data[i]);
-		counter[i]++;
-	}
-};
-	
-Window_Relationships.prototype.makeCommandList = function(){
-	var r;
-	var flag = false;
-	for var i = 0; i < this.data.length; i++){
-		r = $relationshipData.get(this.data[i]);
-		this.addCommand(r.name, "relationship", true, r.relationshipId);
-	} 
-	if (this._list.length < 1){
-		this.addCommand("No Relationships");
-	}
-};
-	
-Window_Relationships.prototype.cursorRight = function(wrap){
-	this.refreshRelationships();
-	this.refresh();
-	this.select(0);
-};
-	
-Windows_Relationships.prototype.cursorLeft = function(wrap)}{
-	this.refreshRelationships();
-	this.refresh();
-	this.select(0);
-};
-	
-//Scene_Relationships
-function Scene_Relationships(){
-	this.initialize.apply(this, arguments);
-};
-	
-Scene_Relationships.prototype = Object.create(Scene_MenuBase.prototype);
-Scene_Relationships.prototype.constructor = Scene_Relationships;  
+    Window_RelationshipInfo.prototype.setRelationship = function(relationship_id) {
+        this.relationship = relationship_id;
+        this.offY = 0;
+        this.resizeFlag = false;
+        this.createrelationshipBitmap();
+        this.refresh();
+    };
     
-Scene_Relationships.prototype.initialize = function() {
-	Scene_MenuBase.prototype.initialize.call(this);
-};
+    Window_RelationshipInfo.prototype.refresh = function() {
+        this.contents.clear();
+        if (this.relationship > 0) {
+            this.contents.blt(this.relationshipBitmap, 0, this.offY, this.contentsWidth(), this.contentsHeight(), 0, 0, this.contentsWidth(), this.contentsHeight());
+        }
+    }
     
-Scene_Relationships.prototype.create = function() {
-    Scene_MenuBase.prototype.create.call(this);
-	this.createQuestWindow();
-};
+    // This function is used to keep track of the height of the bitmap, has to be called after every line of text drawn
+    Window_RelationshipInfo.prototype.write = function() {
+        this.lineY += this.lineHeight() + this.textPadding();
+        if (this.lineY > this.relationshipBitmap.height) {
+            this.relationshipBitmap.resize(this.relationshipBitmap.width, this.lineY);
+            this.resizeFlag = true;
+        }
+    }
+        
+    Window_RelationshipInfo.prototype.createrelationshipBitmap = function() {
+        this.relationshipBitmap.clear();
+        if (this.relationship > 0) {
+            this.relationshipBitmap.paintOpacity = 255;
+            var q = $gameRelationships.get(this.relationship);
+            this.drawRelationshipInfo(q);
+            this.drawRelationshipLikesDislikes(q);
+            // Check for resize, then redraw
+            if (this.resizeFlag) {
+                this.resizeFlag = false;
+                this.createrelationshipBitmap();
+            }
+            if (this.faceImg !== '' && q.current_status === "Known") {
+                this.relationshipBitmap.paintOpacity =  128;
+                this.relationshipBitmap.blt(this.faceImg, 0, 0, this.faceImg.width, this.faceImg.height, 
+                    this.contentsWidth() / 2 - this.faceImg.width / 2, 
+                    this.contentsHeight() / 2 - this.faceImg.height / 2);
+            }
+        }
+    };
+    
+    Window_RelationshipInfo.prototype.drawRelationshipInfo = function(q) {
+        var headerX = 0;
+        this.relationshipBitmap.paintOpacity = 255;
+        this.lineY = 0;
+        this.relationshipBitmap.textColor = this.systemColor();
+        this.relationshipBitmap.drawText(q.name, headerX, this.lineY, this.contentsWidth() - headerX, this.lineHeight());
+        this.write();
+        this.relationshipBitmap.textColor = this.normalColor();
+        var lines = this.sliceText(q.desc, this.contentsWidth());
+        for (var i = 0; i < lines.length; i++) {
+            this.relationshipBitmap.drawText(lines[i], 0, this.lineY, this.contentsWidth(), this.lineHeight());
+            this.write();
+        }
+        this.drawHorzLine(this.lineY);
+        this.write();
+    }
+    
+       
+    Window_RelationshipInfo.prototype.drawRelationshipLikesDislikes = function(q) {
+        var bullet = String("-" ) + " ";
+        // Draw Likes
+        this.relationshipBitmap.textColor = this.systemColor(); 
+        this.relationshipBitmap.drawText("Likes:", 0, this.lineY, this.contentsWidth(), this.lineHeight());
+        this.write();
+        this.relationshipBitmap.textColor = this.normalColor();
+        for (var i = 0; i < q.likes.length; i++) {
+            var likes = q.likes[i];
+            // If the like is hidden and girl hasn't hold you.
+            if (likes[1] === true) {
+                // Draw this shit as hidden
+                var hidden = bullet + (Darkkitten["Config"]["RelationshipSystem"]["Hidden Text"] || "??????");
+                this.relationshipBitmap.drawText(hidden, 0, this.lineY, this.contentsWidth(), this.lineHeight());
+                this.write();
+                continue;
+            }
+            var item = null;
+            this.relationshipBitmap.paintOpacity = 160;
+            switch (likes[0]) {
+                case "item":
+                    item = $dataItems[likes[1]];
+                    this.relationshipBitmap.drawText(bullet, 0, this.lineY, this.contentsWidth(), this.lineHeight());
+                    this.drawItemName(item, this.contents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
+                    this.write();
+                    break;
+            }
+        }
+        // Draw Dislikes
+        this.relationshipBitmap.textColor = this.systemColor(); 
+        this.relationshipBitmap.drawText("Dislikes:", 0, this.lineY, this.contentsWidth(), this.lineHeight());
+        this.write();
+        this.relationshipBitmap.textColor = this.normalColor();
+        for (var i = 0; i < q.dislikes.length; i++) {
+            var dislikes = q.dislikes[i];
+            // If the like is hidden and girl hasn't hold you.
+            if (dislikes[1] === true) {
+                // Draw this shit as hidden
+                var hidden = bullet + (Darkkitten["Config"]["RelationshipSystem"]["Hidden Text"] || "??????");
+                this.relationshipBitmap.drawText(hidden, 0, this.lineY, this.contentsWidth(), this.lineHeight());
+                this.write();
+                continue;
+            }
+            var item = null;
+            this.relationshipBitmap.paintOpacity =  160 ;
+            switch (dislikes[0]) {
+                case "item":
+                    item = $dataItems[dislikes[1]];
+                    this.relationshipBitmap.drawText(bullet, 0, this.lineY, this.contentsWidth(), this.lineHeight());
+                    this.drawItemName(item, this.contents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
+                    this.write();
+                    break;
+            }
+        }
+    }
+    
+    // Borrow some drawing methods since we're drawing to a secondary bitmap
+    Window_RelationshipInfo.prototype.drawItemName = function(item, x, y, width) {
+        width = width || 312;
+        if (item) {
+            var iconBoxWidth = Window_Base._iconWidth + 8;
+            this.relationshipBitmap.textColor = this.normalColor();
+            this.drawIcon(item.iconIndex, x - 2, y + 2);
+            this.relationshipBitmap.drawText(item.name, x + iconBoxWidth, y, width - iconBoxWidth, this.lineHeight());
+        }
+    };
+    
+    Window_RelationshipInfo.prototype.drawIcon = function(iconIndex, x, y) {
+        var bitmap = ImageManager.loadSystem('IconSet');
+        var pw = Window_Base._iconWidth;
+        var ph = Window_Base._iconHeight;
+        var sx = iconIndex % 16 * pw;
+        var sy = Math.floor(iconIndex / 16) * ph;
+        this.relationshipBitmap.blt(bitmap, sx, sy, pw, ph, x, y);
+    };
+    
+    Window_RelationshipInfo.prototype.drawHorzLine = function(y) {
+        var lineY = y + this.lineHeight() / 2 - 1;
+        this.relationshipBitmap.paintOpacity = 48;
+        this.relationshipBitmap.fillRect(0, lineY, this.contentsWidth(), 2, this.normalColor());
+        this.relationshipBitmap.paintOpacity = 255;
+    };
+    
+    // Update the up/down arrows to indicate scrolling is available
+    Window_RelationshipInfo.prototype.updateArrows = function() {
+        this.downArrowVisible = (this.relationshipBitmap.height > this.contentsHeight() && this.offY < this.relationshipBitmap.height - this.contentsHeight());
+        this.upArrowVisible = this.offY > 0;
+    };
+    
+    // Override the arrow key controls so we can scroll instead, let's be honest, that's way cooler
+    Window_RelationshipInfo.prototype.isCursorMovable = function() {
+        return (this.isOpenAndActive());
+    };
 
-Scene_Relationships.prototype.createRelationshipWindow = function(){
-    this.oldIndex = 0;
-	this.relationshipsWindow = new Window_Relationships();
-	this.relationshipsWindow.setHandler("relationship", this.handleRelationships.bind(this));
-	this.relationshipsWindow.setHandler("cancel", this.popScene.bind(this));
-	this.addWindow(this.relationshipsWindow);
-	this.relationshipsInfoW = new Window_RelationshipInfo();
-	this.relationshipsInfoW.setHandler("cancel", this.cancelInfo.bind(this));
-	this.addWindow(this.relationshipInfoW);
-};
-	
-Scene_Relationships.prototype.update = function(){
-	var index = this.relationshipWindow.index();
-	if (this.oldIndex != index){
-		var r = this.relationshipWindow._list[index];
-		if (r.symbol === "relationship")
-			this.relationshipInfo.setRelationship(r.ext);
-			else
-			this.relationshipInfo.setRelationship(-1);
-		this.oldIndex = index;
-	}
-	Scene_Base.prototype.update.call(this);
-};
-	
-Scene_Relationships.prototype.cancelInfo = function(){
-	this.relationshipsWindow.activate();
-	this.relationshipsInfoW.deactivate();
-};
-	
-Scene_Relationships.prototype.handleRelationships = function(){
-	this.relationshipWindow.deactivate();
-	this.relationshipsInfoW.activate();
-};
-	
-Scene_Menu.prototype.commandRelationships = function(){
-	SceneManager.push(Scene_Relationships);
-};
+    Window_RelationshipInfo.prototype.cursorDown = function(wrap) {
+        if (this.relationshipBitmap.height > this.contentsHeight() && this.offY < this.relationshipBitmap.height - this.contentsHeight()) {
+            SoundManager.playCursor();
+            this.offY += this.lineHeight() + this.textPadding();
+            this.refresh();
+        }
+    };
+
+    Window_RelationshipInfo.prototype.cursorUp = function(wrap) {
+        if (this.offY > 0) {
+            SoundManager.playCursor();
+            this.offY -= this.lineHeight() + this.textPadding();
+            if (this.offY < 0)
+                this.offY = 0;
+            this.refresh();
+        }
+    };
+    
+    Window_RelationshipInfo.prototype.cursorPagedown = function() {
+        this.cursorDown();
+    };
+
+    Window_RelationshipInfo.prototype.cursorPageup = function() {
+        this.cursorUp();
+    };
+
+    Window_RelationshipInfo.prototype.cursorRight = function(wrap) {
+        // We are basically...
+    };
+
+    Window_RelationshipInfo.prototype.cursorLeft = function(wrap) {
+        // ...screwing the system
+    };
+    
+//---------------------------------------------------------------------------------------------
+// Window_Relationships
+//---------------------------------------------------------------------------------------------
+    function Window_Relationships() {
+        this.initialize.apply(this, arguments);
+    };
+
+    Window_Relationships.prototype = Object.create(Window_Command.prototype);
+    Window_Relationships.prototype.constructor = Window_Relationships;
+    
+    Window_Relationships.prototype.initialize = function() {
+        var xx = Graphics.boxWidth - 320;
+        var yy = this.fittingHeight(1);
+        // Stores all quests available from $gameParty
+        this.qFilters = ["all", "Unknown", "Known"];
+        this.filterIndex = 0;
+        this.data = [];
+        this.cats = $gameRelationships.categories();
+        this.expanded = [];
+        for (var i = 0; i < this.cats.length; i++) 
+            this.expanded[i] = false;
+        this.filter = "all";
+        this.refreshRelationships();
+        Window_Command.prototype.initialize.call(this, xx, yy);
+    };
+    
+    Window_Relationships.prototype.windowWidth = function() {
+        return 320;
+    };
+
+    Window_Relationships.prototype.numVisibleRows = function() {
+        return 10;
+    };
+    
+    Window_Relationships.prototype.windowHeight = function() {
+        return Graphics.boxHeight - this.fittingHeight(1)
+    }
+    
+    Window_Relationships.prototype.drawItem = function(index) {
+        var item = this._list[index];
+        var rect = this.itemRectForText(index);
+        var align = this.itemTextAlign();
+        this.resetTextColor();
+        this.changePaintOpacity(this.isCommandEnabled(index));
+        var tempX = 0;
+        if (item.symbol === "relationship") {
+            var q = $gameRelationships.get(Number(item.ext));
+            if (q.icon > -1 && (Darkkitten["Config"]["RelationshipSystem"]["Use Icons"]).toLowerCase() === "true") {
+                this.drawIcon(q.icon, rect.x + 8, rect.y + 2);
+                tempX = 40;
+            }
+        }
+        this.drawText(this.commandName(index), rect.x + tempX / 2, rect.y, rect.width, align);
+    };
+    
+    
+    Window_Relationships.prototype.relationshipData = function(relationship_id) {
+        return $gameRelationships.get(relationship_id);
+    };
+    
+    Window_Relationships.prototype.refreshRelationships = function() {
+        this.data = $gameParty.getRelationships();
+        this.cats = $gameRelationships.categories();
+        this.counter = [];
+        for (var i = 0; i < this.cats.length; i++) 
+            this.expanded[i] = false;
+        for (var i = 0; i < this.cats.length; i++) {
+            this.counter[i] = 0;
+            for (var j = 0; j < this.data.length; j++) {
+                var q = $gameRelationships.get(this.data[j]);
+                if (q.cat == i && (this.filter == q.status || this.filter == "all"))
+                    this.counter[i]++;
+            }
+        }
+    };
+
+    Window_Relationships.prototype.setFilter = function(filter) {
+        this.filter = filter;
+    };
+
+    Window_Relationships.prototype.toggle = function(cat) {
+        this.expanded[cat] = !this.expanded[cat];
+        this.refresh();
+    };
+    
+    Window_Relationships.prototype.makeCommandList = function() {
+        var q;
+        var flag = false;
+        var count = "";
+        var useCats   = false;
+        var catMode   = 0;
+        var showCount = false;
+        if (useCats === "true") {
+            for (var i = 0; i < this.cats.length; i++) {
+                flag = true;
+                if (showCount === "true")
+                    count = " (" + String(this.counter[i]) + ")";
+                if (catMode == 1 && this.counter[i] == 0)
+                    flag = false;
+                if (catMode > 0 || this.counter[i] > 0)
+                    this.addCommand(this.cats[i] + count, "cat", flag, String(i));
+                if (this.expanded[i]) {
+                    flag = false;
+                    for (var j = 0; j < this.data.length; j++) {
+                        q = $gameRelationships.get(this.data[j]);
+                        if ((q.status == this.filter || this.filter == "all") && i == q.cat) {
+                            flag = true;
+                            this.addCommand("  " + q.name, "relationship", true, q.relationshipId);
+                        }
+                    }
+                    if (!flag)
+                        this.addCommand("  " + "No Relationships");
+                }
+            }
+        } else {
+            for (var i = 0; i < this.data.length; i++) {
+                q = $gameRelationships.get(this.data[i]);
+                if (q.status == this.filter || this.filter == "all")
+                    this.addCommand(q.name, "relationship", true, q.relationshipId);
+            }
+        }
+        if (this._list.length < 1) {
+            this.addCommand("No Relationships");
+        }
+    };
+    
+    Window_Relationships.prototype.cursorRight = function(wrap) {
+        this.filterIndex = this.filterIndex + 1 > 3 ? 0 : this.filterIndex + 1;
+        this.filter = this.qFilters[this.filterIndex];
+        this.refreshRelationships();
+        this.refresh();
+        this.select(0);
+    };
+
+    Window_Relationships.prototype.cursorLeft = function(wrap) {
+        this.filterIndex = this.filterIndex - 1 < 0 ? 3 : this.filterIndex - 1;
+        this.filter = this.qFilters[this.filterIndex];
+        this.refreshRelationships();
+        this.refresh();
+        this.select(0);
+    };
+//---------------------------------------------------------------------------------------------
+// Window_RelationshipFilter
+//---------------------------------------------------------------------------------------------
+    function Window_RelationshipFilter() {
+        this.initialize.apply(this, arguments);
+    }
+
+    Window_RelationshipFilter.prototype = Object.create(Window_Base.prototype);
+    Window_RelationshipFilter.prototype.constructor = Window_RelationshipFilter;
+
+    Window_RelationshipFilter.prototype.initialize = function() {
+        this.qFilters = [
+            "All",
+            "Unknown",
+            "Known"
+        ];
+        var xx = Graphics.boxWidth - 320;
+        var yy = Graphics.boxHeight - this.windowHeight();
+        this.filterIndex = 0;
+        this.filter = "";
+        var width = this.windowWidth();
+        var height = this.windowHeight();
+        Window_Base.prototype.initialize.call(this, xx, yy, width, height);
+        this.refresh();
+    };
+
+    Window_RelationshipFilter.prototype.windowWidth = function() {
+        return 320;
+    };
+
+    Window_RelationshipFilter.prototype.windowHeight = function() {
+        return this.fittingHeight(1);
+    };
+
+    Window_RelationshipFilter.prototype.refresh = function() {
+        if (this.filter == this.qFilters[this.filterIndex])
+            return;
+        this.filter = this.qFilters[this.filterIndex];
+        this.contents.clear();
+        this.drawText(this.filter, 0, 0, this.contentsWidth(), "center");
+    };
+//---------------------------------------------------------------------------------------------
+// Scene_Relationship
+//---------------------------------------------------------------------------------------------
+    function Scene_Relationship() {
+        this.initialize.apply(this, arguments);
+    };
+
+    Scene_Relationship.prototype = Object.create(Scene_MenuBase.prototype);
+    Scene_Relationship.prototype.constructor = Scene_Relationship;    
+
+    Scene_Relationship.prototype.initialize = function() {
+        Scene_MenuBase.prototype.initialize.call(this);
+    };
+    
+    Scene_Relationship.prototype.create = function() {
+        Scene_MenuBase.prototype.create.call(this);
+        this.qFilters = ["all", "unknown", "known"];
+        this.createrelationshipWindow();
+    };
+    
+    Scene_Relationship.prototype.createrelationshipWindow = function() {
+        this.oldIndex = 0;
+        this.relationshipWindow = new Window_Relationships();
+        this.relationshipWindow.setHandler("cat", this.handleCategory.bind(this));
+        this.relationshipWindow.setHandler("relationship", this.handleRelationship.bind(this));
+        this.relationshipWindow.setHandler("cancel", this.popScene.bind(this));
+        this.addWindow(this.relationshipWindow);
+        this.relationshipInfo = new Window_RelationshipInfo();
+        this.relationshipInfo.setHandler("cancel", this.cancelInfo.bind(this));
+        this.addWindow(this.relationshipInfo);
+        this.relationshipFilter = new Window_RelationshipFilter();
+        this.addWindow(this.relationshipFilter);
+    };
+    
+    Scene_Relationship.prototype.update = function() {
+        var index = this.relationshipWindow.index();
+        if (this.oldIndex != index) {
+            var q = this.relationshipWindow._list[index];
+            if (q.symbol === "quest")
+                this.relationshipInfo.setRelationship(q.ext);
+            else 
+                this.relationshipInfo.setRelationship(-1);
+            this.oldIndex = index;
+        }
+        this.relationshipFilter.filterIndex = this.relationshipWindow.filterIndex;
+        this.relationshipFilter.refresh();
+        Scene_Base.prototype.update.call(this);
+    };
+    
+    Scene_Relationship.prototype.cancelInfo = function() {
+        this.relationshipWindow.activate();
+        this.relationshipInfo.deactivate();
+    }
+    
+    Scene_Relationship.prototype.handleRelationship = function() {
+        this.relationshipWindow.deactivate();
+        this.relationshipInfo.activate();
+    };
+    
+    Scene_Relationship.prototype.handleCategory = function() {
+        var catIndex = this.relationshipWindow.currentExt();
+        this.relationshipWindow.toggle(catIndex);
+        this.relationshipWindow.refresh();
+        this.relationshipWindow.activate();
+    };
+
+    // This is used to open up the Quest Log from the menu
+    // Used in conjunction with Yanfly's Menu plugin
+    Scene_Menu.prototype.commandRelationship = function() {
+        SceneManager.push(Scene_Relationship);
+    };
