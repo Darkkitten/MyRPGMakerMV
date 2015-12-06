@@ -56,10 +56,10 @@
  *
 */
  
- // Import 'Quest System' 
+// Import 'Relationship System' 
 var Darkkitten = Darkkitten || {};
 Darkkitten["Config"] = Darkkitten["Config"] || {};
-Darkkitten["Relationships"] = 1.0.0;
+//Darkkitten["Relationships"] = 1.0.0;
 Darkkitten["Config"]["RelationshipSystem"] = PluginManager.parameters("Relationships");
 
 // Initialize global Relationship variables
@@ -87,7 +87,7 @@ DataManager._databaseFiles.push(
 //---------------------------------------------------------------------------------------------
     Game_Interpreter.prototype.pluginCommand = function(command, args) {
         Darkkitten_Plugin_Commands.call(this, command, args);
-        if (command.toLowerCase() === "relationship") {
+        if (command.toLowerCase() === "r_data") {
             switch (args[0].toLowerCase()) {
             case 'open':
                 SceneManager.push(Scene_Relationship);
@@ -104,20 +104,20 @@ DataManager._databaseFiles.push(
 //---------------------------------------------------------------------------------------------
     DataManager.makeSaveContents = function() {
         contents = Darkkitten_Save_Data.call(this);
-        // Include the quests in the save file
-        contents.quests = $gameRelationships;
+        // Include the Relationships in the save file
+        contents.relationships = $gameRelationships;
         return contents;
     };
     
     DataManager.extractSaveContents = function(contents) {
         Darkkitten_Load_Data.call(this, contents);
         // Then take them back because we really don't trust banks
-        $gameRelationships = contents.quests;
+        $gameRelationships = contents.relationships;
     };
     
     DataManager.createGameObjects = function() {
         Darkkitten_Data_Initialize.call(this);
-        // Create global quests
+        // Create global Relationships
         $gameRelationships = new Game_Relationships();
     };
     
@@ -126,66 +126,56 @@ DataManager._databaseFiles.push(
 //---------------------------------------------------------------------------------------------
     Game_Party.prototype.initialize = function() {
         Darkkitten_Party_Initialize.call(this);
-        // Initialize quest data
+        // Initialize Relationshions data
         this.relationships = [];
     };
     
-    Game_Party.prototype.addQuest = function(relationship_id) {
-        // Does party already have quest?
+    Game_Party.prototype.addRelationship = function(relationship_id) {
+        // Does party already have Relationship?
         if (this.relationships.indexOf(relationship_id) < 0) {
             // If not, give that crap to them. They don't have a choice now.
             this.relationships.push(relationship_id);
         }
     };
-    
-    // Removes the quest from the party. NOTE: This does NOT reset the quest
-    Game_Party.prototype.removeQuest = function(relationship_id) {
-        // Check if quest exists
-        if (this.relationships.indexOf(relationship_id) > -1) {
-            // I was wrong...
-            var index = this.relationships.indexOf(relationship_id);
-            this.relationships.splice(index, 1);
-        }
-    };
-    
-    // Returns total number of quests the party has
+        
+    // Returns total number of Relationships the party has
     // filter can be "all", "progress" "completed" or "failed"
-    Game_Party.prototype.totalQuests = function(filter) {
-        // Returns a list of ALL quests
+    Game_Party.prototype.totalRelationships = function(filter) {
+        // Returns a list of ALL Relationships
         if (filter === undefined || filter === "all")
             return this.relationships.length;
-        // Time to cycle through quests....(dammit, I did this exact thing in the quest list window)
+        // Time to cycle through Relationships....(dammit, I did this exact thing in the Relationships list window)
         var count = 0;
         for (var i = 0; i < this.relationships.length; i++) {
-            var q = $gameQuest.get(this.relationships[i]);
-            if (q.status === filter.toLowerCase())
+            var q = $gameRelationships.get(this.relationships[i]);
+            if (q.current_status === filter.toLowerCase())
                 count++;
         }
         return count;
     };
     
-    // Gets all quest id's 
+    // Gets all Relationship id's 
     Game_Party.prototype.getRelationships = function(filter) {
-        // Returns a list of ALL quests
+        // Returns a list of ALL Relationships
         if (filter === undefined || filter === "all")
             return this.relationships;
-        // Time to cycle through quests....(dammit, I did this exact thing in the quest list window)
+        // Time to cycle through Relationships....(dammit, I did this exact thing in the Relationship list window)
         var data = [];
         for (var i = 0; i < this.relationships.length; i++) {
-            var q = $gameQuest.get(this.relationships[i]);
-            if (q.status === filter.toLowerCase())
+            var q = $gameRelationships.get(this.relationships[i]);
+            if (q.current_status === filter.toLowerCase())
                 data.push(q.relationshipId);
         }
         return data;
     };
     
     // This method is actually extremely useless. Ignore it for now.
-    Game_Party.prototype.getQuest = function(index) {
+    Game_Party.prototype.getRelationship = function(index) {
         return $gameRelationships.get(this.relationships[index]);
     };
     
-    Game_Party.prototype.hasQuest = function(relationship_id){
-        // Returns whether or not they have the quest
+    Game_Party.prototype.hasRelationship = function(relationship_id){
+        // Returns whether or not they have the Relationship
         return this.relationships.indexOf(relationship_id) > -1;
     };
     
@@ -195,7 +185,7 @@ DataManager._databaseFiles.push(
     Game_Party.prototype.hasRelationships = function(relationships, filter) {
         flag = true;
         for (var i = 0; i < relationships.length; i++) {
-            if (!this.hasQuest(relationships[i]))
+            if (!this.hasRelationship(relationships[i]))
                 flag = false;
             if ($gameRelationships.get(relationships[i]).status !== filter)
                 flag = false;
@@ -288,15 +278,15 @@ DataManager._databaseFiles.push(
         return null;
     };
     
-    Game_Relationships.prototype.totalQuests = function(filter) {
-        // Returns a list of ALL quests
+    Game_Relationships.prototype.totalRelationships = function(filter) {
+        // Returns a list of ALL Relationships
         if (filter === undefined || filter === "all")
             return $dataRelationships.length;
-        // Time to cycle through quests....(dammit, I did this exact thing in the quest list window)
+        // Time to cycle through Relationships....(dammit, I did this exact thing in the Relationships list window)
         var count = 0;
         for (var i = 0; i < $dataRelationships.length; i++) {
             var q = this.get(this.relationships[i]);
-            if (q.status === filter.toLowerCase())
+            if (q.current_status === filter.toLowerCase())
                 count++;
         }
         return data;
@@ -336,7 +326,6 @@ DataManager._databaseFiles.push(
     
     Window_RelationshipInfo.prototype.initialize = function() {
         var xx = 320;
-        //this.failedImg = GameusScripts["Config"]["QuestSystem"]["Failed Image"] || '';
         this.faceImg = Darkkitten["Config"]["RelationshipSystem"]["Face"] || '';
         if (this.faceImg !== '')
             this.faceImg = ImageManager.loadFace(this.faceImg, 0);
@@ -553,7 +542,7 @@ DataManager._databaseFiles.push(
     Window_Relationships.prototype.initialize = function() {
         var xx = Graphics.boxWidth - 320;
         var yy = this.fittingHeight(1);
-        // Stores all quests available from $gameParty
+        // Stores all Relationships available from $gameParty
         this.qFilters = ["all", "Unknown", "Known"];
         this.filterIndex = 0;
         this.data = [];
@@ -610,7 +599,7 @@ DataManager._databaseFiles.push(
             this.counter[i] = 0;
             for (var j = 0; j < this.data.length; j++) {
                 var q = $gameRelationships.get(this.data[j]);
-                if (q.cat == i && (this.filter == q.status || this.filter == "all"))
+                if (q.cat == i && (this.filter == q.current_status || this.filter == "all"))
                     this.counter[i]++;
             }
         }
@@ -645,7 +634,7 @@ DataManager._databaseFiles.push(
                     flag = false;
                     for (var j = 0; j < this.data.length; j++) {
                         q = $gameRelationships.get(this.data[j]);
-                        if ((q.status == this.filter || this.filter == "all") && i == q.cat) {
+                        if ((q.current_status == this.filter || this.filter == "all") && i == q.cat) {
                             flag = true;
                             this.addCommand("  " + q.name, "relationship", true, q.relationshipId);
                         }
@@ -657,7 +646,7 @@ DataManager._databaseFiles.push(
         } else {
             for (var i = 0; i < this.data.length; i++) {
                 q = $gameRelationships.get(this.data[i]);
-                if (q.status == this.filter || this.filter == "all")
+                if (q.current_status == this.filter || this.filter == "all")
                     this.addCommand(q.name, "relationship", true, q.relationshipId);
             }
         }
@@ -760,7 +749,7 @@ DataManager._databaseFiles.push(
         var index = this.relationshipWindow.index();
         if (this.oldIndex != index) {
             var q = this.relationshipWindow._list[index];
-            if (q.symbol === "quest")
+            if (q.symbol === "relationship")
                 this.relationshipInfo.setRelationship(q.ext);
             else 
                 this.relationshipInfo.setRelationship(-1);
@@ -788,7 +777,7 @@ DataManager._databaseFiles.push(
         this.relationshipWindow.activate();
     };
 
-    // This is used to open up the Quest Log from the menu
+    // This is used to open up the Relationship Log from the menu
     // Used in conjunction with Yanfly's Menu plugin
     Scene_Menu.prototype.commandRelationship = function() {
         SceneManager.push(Scene_Relationship);
