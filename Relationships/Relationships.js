@@ -58,8 +58,9 @@
  
 // Import 'Relationship System' 
 var Darkkitten = Darkkitten || {};
-Darkkitten["Config"] = Darkkitten["Config"] || {};
-Darkkitten["Config"]["RelationshipSystem"] = PluginManager.parameters("Relationships");
+Darkkitten.Parameters = PluginManager.parameters('Relationships');
+//Darkkitten["Config"] = Darkkitten["Config"] || {};
+//Darkkitten["Config"]["RelationshipSystem"] = PluginManager.parameters("Relationships");
 var Imported = Imported || {};
 Imported.Relationships = true;
 
@@ -72,7 +73,6 @@ var $gameRelationships = null;
 // Load Relationship data
 DataManager._databaseFiles.push(
     {name: "$dataRelationships", src: "Relationships.json"}
-    
 );
 
 //---------------------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ DataManager._databaseFiles.push(
     Darkkitten_Save_Data        = DataManager.makeSaveContents;
     Darkkitten_Load_Data        = DataManager.extractSaveContents;
     Darkkitten_Plugin_Commands  = Game_Interpreter.prototype.pluginCommand;
-    
+   
 //---------------------------------------------------------------------------------------------
 // Plugin Commands
 //---------------------------------------------------------------------------------------------
@@ -108,6 +108,7 @@ DataManager._databaseFiles.push(
         contents = Darkkitten_Save_Data.call(this);
         // Include the Relationships in the save file
         contents.relationships = $gameRelationships;
+        console.log(contents.relationships);
         return contents;
     };
     
@@ -115,6 +116,7 @@ DataManager._databaseFiles.push(
         Darkkitten_Load_Data.call(this, contents);
         // Then take them back because we really don't trust banks
         $gameRelationships = contents.relationships;
+                console.log(contents.relationships);
     };
     
     DataManager.createGameObjects = function() {
@@ -154,6 +156,7 @@ DataManager._databaseFiles.push(
                 count++;
         }
         return count;
+                console.log(count);
     };
     
     // Gets all Relationship id's 
@@ -163,7 +166,7 @@ DataManager._databaseFiles.push(
             return this.relationships;
         // Time to cycle through Relationships....(dammit, I did this exact thing in the Relationship list window)
         var data = [];
-        for (var i = 0; i < this.relationships.length; i++) {
+        for (i = 0; i < this.relationships.length; i++) {
             var q = $gameRelationships.get(this.relationships[i]);
             if (q.current_status === filter.toLowerCase())
                 data.push(q.relationshipId);
@@ -186,7 +189,7 @@ DataManager._databaseFiles.push(
     // Used to check a range of relationships completion
     Game_Party.prototype.hasRelationships = function(relationships, filter) {
         flag = true;
-        for (var i = 0; i < relationships.length; i++) {
+        for (i = 0; i < relationships.length; i++) {
             if (!this.hasRelationship(relationships[i]))
                 flag = false;
             if ($gameRelationships.get(relationships[i]).status !== filter)
@@ -200,7 +203,7 @@ DataManager._databaseFiles.push(
 //---------------------------------------------------------------------------------------------
     function Game_Relationship() {
         this.initialize.apply(this, arguments);
-    };
+    }
     
     Game_Relationship.prototype.initialize = function(relationshipId) {
         var relationshipsData = $dataRelationships[relationshipId];
@@ -258,7 +261,7 @@ DataManager._databaseFiles.push(
 //---------------------------------------------------------------------------------------------
     function Game_Relationships() {
         this.initialize.apply(this, arguments);
-    };
+    }
     
     Game_Relationships.prototype.initialize = function() {
         this.data = [];
@@ -286,7 +289,7 @@ DataManager._databaseFiles.push(
             return $dataRelationships.length;
         // Time to cycle through Relationships....(dammit, I did this exact thing in the Relationships list window)
         var count = 0;
-        for (var i = 0; i < $dataRelationships.length; i++) {
+        for (i = 0; i < $dataRelationships.length; i++) {
             var q = this.get(this.relationships[i]);
             if (q.current_status === filter.toLowerCase())
                 count++;
@@ -302,7 +305,7 @@ DataManager._databaseFiles.push(
             return words;
         var result = [];
         var current_text = words.shift();
-        for (var i = 0; i < words.length; i++) {
+        for (i = 0; i < words.length; i++) {
             var word = words[i];
             var textW = this.contents.measureTextWidth(current_text + " " + word);
             if (textW > width) {
@@ -328,7 +331,7 @@ DataManager._databaseFiles.push(
     
     Window_RelationshipInfo.prototype.initialize = function() {
         var xx = 320;
-        this.faceImg = Darkkitten["Config"]["RelationshipSystem"]["Face"] || '';
+        this.faceImage = Darkkitten.Parameters['Face'];
         if (this.faceImg !== '')
             this.faceImg = ImageManager.loadFace(this.faceImg, 0);
         this.relationship = 0;
@@ -394,7 +397,7 @@ DataManager._databaseFiles.push(
         this.write();
         this.relationshipBitmap.textColor = this.normalColor();
         var lines = this.sliceText(q.desc, this.contentsWidth());
-        for (var i = 0; i < lines.length; i++) {
+        for (i = 0; i < lines.length; i++) {
             this.relationshipBitmap.drawText(lines[i], 0, this.lineY, this.contentsWidth(), this.lineHeight());
             this.write();
         }
@@ -410,12 +413,13 @@ DataManager._databaseFiles.push(
         this.relationshipBitmap.drawText("Likes:", 0, this.lineY, this.contentsWidth(), this.lineHeight());
         this.write();
         this.relationshipBitmap.textColor = this.normalColor();
-        for (var i = 0; i < q.likes.length; i++) {
+        for (i = 0; i < q.likes.length; i++) {
             var likes = q.likes[i];
             // If the like is hidden and girl hasn't hold you.
             if (likes[1] === true) {
                 // Draw this shit as hidden
-                var hidden = bullet + (Darkkitten["Config"]["RelationshipSystem"]["Hidden Text"] || "??????");
+                //var hidden = bullet + (Darkkitten["Config"]["RelationshipSystem"]["Hidden Text"] || "??????");
+                var hidden = Bullet + Darkkitten.Parameters['Hidden Text'];
                 this.relationshipBitmap.drawText(hidden, 0, this.lineY, this.contentsWidth(), this.lineHeight());
                 this.write();
                 continue;
@@ -436,12 +440,13 @@ DataManager._databaseFiles.push(
         this.relationshipBitmap.drawText("Dislikes:", 0, this.lineY, this.contentsWidth(), this.lineHeight());
         this.write();
         this.relationshipBitmap.textColor = this.normalColor();
-        for (var i = 0; i < q.dislikes.length; i++) {
+        for (i = 0; i < q.dislikes.length; i++) {
             var dislikes = q.dislikes[i];
             // If the like is hidden and girl hasn't hold you.
             if (dislikes[1] === true) {
                 // Draw this shit as hidden
-                var hidden = bullet + (Darkkitten["Config"]["RelationshipSystem"]["Hidden Text"] || "??????");
+                //var hidden = bullet + (Darkkitten["Config"]["RelationshipSystem"]["Hidden Text"] || "??????");
+                var hidden = bullet + Darkkitten.Parameters['Hidden Text'];
                 this.relationshipBitmap.drawText(hidden, 0, this.lineY, this.contentsWidth(), this.lineHeight());
                 this.write();
                 continue;
@@ -536,7 +541,7 @@ DataManager._databaseFiles.push(
 //---------------------------------------------------------------------------------------------
     function Window_Relationships() {
         this.initialize.apply(this, arguments);
-    };
+    }
 
     Window_Relationships.prototype = Object.create(Window_Command.prototype);
     Window_Relationships.prototype.constructor = Window_Relationships;
@@ -550,7 +555,7 @@ DataManager._databaseFiles.push(
         this.data = [];
         this.cats = $gameRelationships.categories();
         this.expanded = [];
-        for (var i = 0; i < this.cats.length; i++) 
+        for (i = 0; i < this.cats.length; i++) 
             this.expanded[i] = false;
         this.filter = "all";
         this.refreshRelationships();
@@ -578,7 +583,8 @@ DataManager._databaseFiles.push(
         var tempX = 0;
         if (item.symbol === "relationship") {
             var q = $gameRelationships.get(Number(item.ext));
-            if (q.icon > -1 && (Darkkitten["Config"]["RelationshipSystem"]["Use Icons"]).toLowerCase() === "true") {
+            //if (q.icon > -1 && (Darkkitten["Config"]["RelationshipSystem"]["Use Icons"]).toLowerCase() === "true") {
+            if (q.icon > -1 && Darkkitten.Parameters['USe Icons'].toLowerCase() === "true") {
                 this.drawIcon(q.icon, rect.x + 8, rect.y + 2);
                 tempX = 40;
             }
@@ -595,11 +601,11 @@ DataManager._databaseFiles.push(
         this.data = $gameParty.getRelationships();
         this.cats = $gameRelationships.categories();
         this.counter = [];
-        for (var i = 0; i < this.cats.length; i++) 
+        for (i = 0; i < this.cats.length; i++) 
             this.expanded[i] = false;
-        for (var i = 0; i < this.cats.length; i++) {
+        for (i = 0; i < this.cats.length; i++) {
             this.counter[i] = 0;
-            for (var j = 0; j < this.data.length; j++) {
+            for (j = 0; j < this.data.length; j++) {
                 var q = $gameRelationships.get(this.data[j]);
                 if (q.cat == i && (this.filter == q.current_status || this.filter == "all"))
                     this.counter[i]++;
@@ -624,7 +630,7 @@ DataManager._databaseFiles.push(
         var catMode   = 0;
         var showCount = false;
         if (useCats === "true") {
-            for (var i = 0; i < this.cats.length; i++) {
+            for (i = 0; i < this.cats.length; i++) {
                 flag = true;
                 if (showCount === "true")
                     count = " (" + String(this.counter[i]) + ")";
@@ -634,7 +640,7 @@ DataManager._databaseFiles.push(
                     this.addCommand(this.cats[i] + count, "cat", flag, String(i));
                 if (this.expanded[i]) {
                     flag = false;
-                    for (var j = 0; j < this.data.length; j++) {
+                    for (j = 0; j < this.data.length; j++) {
                         q = $gameRelationships.get(this.data[j]);
                         if ((q.current_status == this.filter || this.filter == "all") && i == q.cat) {
                             flag = true;
@@ -646,7 +652,7 @@ DataManager._databaseFiles.push(
                 }
             }
         } else {
-            for (var i = 0; i < this.data.length; i++) {
+            for (i = 0; i < this.data.length; i++) {
                 q = $gameRelationships.get(this.data[i]);
                 if (q.current_status == this.filter || this.filter == "all")
                     this.addCommand(q.name, "relationship", true, q.relationshipId);
@@ -718,7 +724,7 @@ DataManager._databaseFiles.push(
 //---------------------------------------------------------------------------------------------
     function Scene_Relationship() {
         this.initialize.apply(this, arguments);
-    };
+    }
 
     Scene_Relationship.prototype = Object.create(Scene_MenuBase.prototype);
     Scene_Relationship.prototype.constructor = Scene_Relationship;    
