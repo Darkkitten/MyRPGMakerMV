@@ -35,19 +35,17 @@ Darkkitten.Param = Darkkitten.Param || {};
 var Imported = Imported || {};
 Imported.CmdInp = true;
 
-
 //Get Plugin Command Variables if not default.
 var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 Game_Interpreter.prototype.pluginCommand = function(command, args) {
     getInformation_pluginCommand.call(this, command, args);
     if (command === "enter_text") {
-        if(args != null){
+        if(args.length > 1 ){
+        	Darkkitten.Param.defaultPromptText = '';
 			Darkkitten.Param.varId = Number(args[0]);
 			Darkkitten.Param.maxLength = Number(args[1]);
 			
-			
 			for (i = 2; i < args.length; i++){
-				//Darkkitten.Param.defaultPromptText += args[i].split(" ").replace("undefied","");
 				 Darkkitten.Param.defaultPromptText += args[i]+ " ";
 				}
 				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
@@ -57,10 +55,12 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 			else{
 				Darkkitten.Param.varId = Number(Darkkitten.Parameters['Text Variable']);
 				Darkkitten.Param.maxLength = Number(Darkkitten.Parameters['Max Characters']);
-				Darkkitten.Param.defaultPromptText = String("default" + Darkkitten.Parameters['Default Header']);
+				Darkkitten.Param.defaultPromptText = String(Darkkitten.Parameters['Default Header']);
+				Darkkitten.Param.Def = true;
 				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
 				SceneManager.push(Scene_Input);
 			}
+			console.log(args.length);
       }
 }
 
@@ -108,19 +108,10 @@ Scene_Input.prototype.CIW = function() {
 }
 
 Scene_Input.prototype.onThatsJustFine = function() {
-	
 	var str = this._editTextWindow.finaltext();
-	var re = new RegExp(str, "i")
-	//console.log(re.test(str));
-	
-	//var _textout = new RegExp(this._editTextWindow.finaltext(), "i");
-	
+	var re = new RegExp(str, "i");
 	$gameVariables.setValue(Darkkitten.Param.varId, re.source);	
-	console.log(re.source);
-	//console.log(_textout);
-
-
-	//console.log("\Final Text:" + this._editTextWindow.finaltext());
+	//console.log(re.source);
 	this.popScene();
 }
 
@@ -212,14 +203,14 @@ Window_TextEdit.prototype.charWidth = function() {
 
 Window_TextEdit.prototype.left = function() {
 		var textCenter = (this.contentsWidth() + this.DefaultTextWidth()) / 2;
-		var textWidth = (Darkkitten.Param.maxLength + 1) * this.charWidth();
+		var textWidth = (Darkkitten.Param.maxLength + 2) * this.charWidth();
     	return Math.min(textCenter - textWidth / 2, this.contentsWidth() - textWidth);
 }
 
 Window_TextEdit.prototype.itemRect = function(index) {
     return {
         //x: this.left() + index * this.charWidth(),
-        x: this.left() + index * this.charWidth(),
+        x: this.left() + index * this.charWidth() - 13,
         y: 70,
         width: this.charWidth(),
         height: this.lineHeight()
@@ -256,7 +247,12 @@ Window_TextEdit.prototype.drawChar = function(index) {
 
 Window_TextEdit.prototype.refresh = function() {
     this.contents.clear();
-	this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), this.left() , this.lineHeight());
+    
+    if (Darkkitten.Param.Def === true)
+		this.drawTextEx(Darkkitten.Param.defaultPromptText, 0 , this.lineHeight());
+	else
+		this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0 , this.lineHeight());
+		
     for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     	this.drawUnderline(i);
     }
