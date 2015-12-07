@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v1.0.2 Enables a Command Input system.
+ * @plugindesc v1.0.3 Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
