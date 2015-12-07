@@ -1,8 +1,8 @@
 [
-	[Unknown, Known],
+	["Unknown", "Known"],
 	{
 		"id": 1,
-		"face": People1, 2,
+		"face": "People1"
 		"name": "Beverly",
 		"cat": 0,
 		"current_status": "none",
