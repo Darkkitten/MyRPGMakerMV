@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v1.0.3 Enables a Command Input system.
+ * @plugindesc v1.0.4 Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -41,10 +41,10 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
     getInformation_pluginCommand.call(this, command, args);
     if (command === "enter_text") {
         if(args.length > 1 ){
-        	Darkkitten.Param.defaultPromptText = '';
+        	//Darkkitten.Param.defaultPromptText = '';
 			Darkkitten.Param.varId = Number(args[0]);
 			Darkkitten.Param.maxLength = Number(args[1]);
-			
+			Darkkitten.Param.Def = "false";
 			for (i = 2; i < args.length; i++){
 				 Darkkitten.Param.defaultPromptText += args[i]+ " ";
 				}
@@ -56,7 +56,7 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 				Darkkitten.Param.varId = Number(Darkkitten.Parameters['Text Variable']);
 				Darkkitten.Param.maxLength = Number(Darkkitten.Parameters['Max Characters']);
 				Darkkitten.Param.defaultPromptText = String(Darkkitten.Parameters['Default Header']);
-				Darkkitten.Param.Def = true;
+				Darkkitten.Param.Def = "true";
 				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
 				SceneManager.push(Scene_Input);
 			}
@@ -112,6 +112,7 @@ Scene_Input.prototype.onThatsJustFine = function() {
 	var re = new RegExp(str, "i");
 	$gameVariables.setValue(Darkkitten.Param.varId, re.source);	
 	//console.log(re.source);
+	Darkkitten.Param.defaultPromptText = '';
 	this.popScene();
 }
 
@@ -247,20 +248,31 @@ Window_TextEdit.prototype.drawChar = function(index) {
 
 Window_TextEdit.prototype.refresh = function() {
     this.contents.clear();
-    
-    if (Darkkitten.Param.Def === true)
-		this.drawTextEx(Darkkitten.Param.defaultPromptText, 0 , this.lineHeight());
-	else
-		this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0 , this.lineHeight());
-		
-    for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
-    	this.drawUnderline(i);
-    }
-    for (var j = 0; j < this._text.length; j++) {
-        this.drawChar(j);
-    }
-    var rect = this.itemRect(this._index);
-    this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+    switch(Darkkitten.Param.Def.toLowerCase())
+    {
+		case "true":
+			this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
+    		for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
+    			this.drawUnderline(i);
+   			}
+    		for (var j = 0; j < this._text.length; j++) {
+       			this.drawChar(j);
+  			}
+   			var rect = this.itemRect(this._index);
+    		this.setCursorRect(rect.x, rect.y, rect.width, rect.height);	
+		break;
+		case "false":
+			this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
+   			 for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
+    			 this.drawUnderline(i);
+    		 }
+   			 for (var j = 0; j < this._text.length; j++) {
+        		this.drawChar(j);
+   			 }
+    		var rect = this.itemRect(this._index);
+    		this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+		break;
+	}
 }
 
 //-----------------------------------------------------------------------------
