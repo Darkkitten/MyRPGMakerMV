@@ -1,5 +1,5 @@
 /*:
- * @plugindesc v0.0.1 This script creates a Relationship system / Bio window based on V's Relationship / Bio window for RPG Maker VX Ace.
+ * @plugindesc v0.0.2 This script creates a Relationship system / Bio window based on V's Relationship / Bio window for RPG Maker VX Ace.
  * @author Darkkitten
  *
  * @help
@@ -59,8 +59,7 @@
 // Import 'Relationship System' 
 var Darkkitten = Darkkitten || {};
 Darkkitten.Parameters = PluginManager.parameters('Relationships');
-//Darkkitten["Config"] = Darkkitten["Config"] || {};
-//Darkkitten["Config"]["RelationshipSystem"] = PluginManager.parameters("Relationships");
+
 var Imported = Imported || {};
 Imported.Relationships = true;
 
@@ -124,7 +123,7 @@ DataManager._databaseFiles.push(
         // Create global Relationships
         $gameRelationships = new Game_Relationships();
     };
-    
+  
 //---------------------------------------------------------------------------------------------
 // Game_Party
 //---------------------------------------------------------------------------------------------
@@ -156,7 +155,6 @@ DataManager._databaseFiles.push(
                 count++;
         }
         return count;
-                console.log(count);
     };
     
     // Gets all Relationship id's 
@@ -196,7 +194,7 @@ DataManager._databaseFiles.push(
                 flag = false;
         }
         return flag;
-    }
+    };
     
 //---------------------------------------------------------------------------------------------
 // Game_Relationship
@@ -211,7 +209,7 @@ DataManager._databaseFiles.push(
         this.rawData = relationshipsData;
         this.cat = relationshipsData.cat;
         this.name = relationshipsData.name;
-        this.relationshiplvl = $gameVariable.value(relationshipData.levelvar);
+        this.relationshiplvl = $gameVariables.value(relationshipData.levelvar);
         this.desc = relationshipsData.desc;
         this.likes = relationshipsData.likes;
         this.dislikes = relationshipsData.dislikes;
@@ -222,15 +220,15 @@ DataManager._databaseFiles.push(
     
     
     Game_Relationship.prototype.mastered = function() {
-        return this.current_status == "Mastered";
+        this.current_status = "Mastered";
     };
     
     Game_Relationship.prototype.isKnown = function() {
-        return this.current_status == "Known";
+        this.current_status = "Known";
     };
     
     Game_Relationship.prototype.hated = function() {
-        return this.current_status == "Hated";
+        this.current_status = "Hated";
     };
     
     Game_Relationship.prototype.loved = function() {
@@ -238,15 +236,15 @@ DataManager._databaseFiles.push(
     };
     
     Game_Relationship.prototype.isUnknown = function(){
-		return this.current_status == "Unknown";
+		this.current_status = "Unknown";
 	};
 	
-	Game_Relationship.prototype.disliked == function(){
-		return this.current_status == "Disliked";
+	Game_Relationship.prototype.disliked = function(){
+		this.current_status = "Disliked";
 	};
 	
-    Game_Relationship.prototype.liked == function(){
-    	return this.current_status == "Liked";
+    Game_Relationship.prototype.liked = function(){
+    	this.current_status = "Liked";
     };
     
     Game_Relationship.prototype.reset = function(levelvari) {
@@ -296,6 +294,8 @@ DataManager._databaseFiles.push(
         }
         return data;
     };
+    
+
 //---------------------------------------------------------------------------------------------
 // Window_Base
 //---------------------------------------------------------------------------------------------
@@ -315,10 +315,10 @@ DataManager._databaseFiles.push(
                 current_text += " " + word;
             }
             if (i >= words.length - 1)
-                result.push(current_text) 
+                result.push(current_text); 
         }
-        return result
-    }
+        return result;
+    };
 //---------------------------------------------------------------------------------------------
 // Window_RelationshipInfo
 //---------------------------------------------------------------------------------------------
@@ -356,7 +356,7 @@ DataManager._databaseFiles.push(
         if (this.relationship > 0) {
             this.contents.blt(this.relationshipBitmap, 0, this.offY, this.contentsWidth(), this.contentsHeight(), 0, 0, this.contentsWidth(), this.contentsHeight());
         }
-    }
+    };
     
     // This function is used to keep track of the height of the bitmap, has to be called after every line of text drawn
     Window_RelationshipInfo.prototype.write = function() {
@@ -365,7 +365,7 @@ DataManager._databaseFiles.push(
             this.relationshipBitmap.resize(this.relationshipBitmap.width, this.lineY);
             this.resizeFlag = true;
         }
-    }
+    };
         
     Window_RelationshipInfo.prototype.createrelationshipBitmap = function() {
         this.relationshipBitmap.clear();
@@ -403,7 +403,7 @@ DataManager._databaseFiles.push(
         }
         this.drawHorzLine(this.lineY);
         this.write();
-    }
+    };
     
        
     Window_RelationshipInfo.prototype.drawRelationshipLikesDislikes = function(q) {
@@ -424,13 +424,13 @@ DataManager._databaseFiles.push(
                 this.write();
                 continue;
             }
-            var item = null;
+            var likeditems = null;
             this.relationshipBitmap.paintOpacity = 160;
             switch (likes[0]) {
                 case "item":
-                    item = $dataItems[likes[1]];
+                    likeditems = $dataItems[likes[1]];
                     this.relationshipBitmap.drawText(bullet, 0, this.lineY, this.contentsWidth(), this.lineHeight());
-                    this.drawItemName(item, this.contents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
+                    this.drawItemName(likeditems, this.contents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
                     this.write();
                     break;
             }
@@ -446,23 +446,23 @@ DataManager._databaseFiles.push(
             if (dislikes[1] === true) {
                 // Draw this shit as hidden
                 //var hidden = bullet + (Darkkitten["Config"]["RelationshipSystem"]["Hidden Text"] || "??????");
-                var hidden = bullet + Darkkitten.Parameters['Hidden Text'];
+                //this.hidden = bullet + Darkkitten.Parameters['Hidden Text'];
                 this.relationshipBitmap.drawText(hidden, 0, this.lineY, this.contentsWidth(), this.lineHeight());
                 this.write();
                 continue;
             }
-            var item = null;
+            var dislikeditems = null; 
             this.relationshipBitmap.paintOpacity =  160 ;
             switch (dislikes[0]) {
                 case "item":
-                    item = $dataItems[dislikes[1]];
+                    dislikeditems = $dataItems[dislikes[1]];
                     this.relationshipBitmap.drawText(bullet, 0, this.lineY, this.contentsWidth(), this.lineHeight());
-                    this.drawItemName(item, this.contents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
+                    this.drawItemName(dislikeditems, this.contents.measureTextWidth(bullet), this.lineY, this.contentsWidth());
                     this.write();
                     break;
             }
         }
-    }
+    };
     
     // Borrow some drawing methods since we're drawing to a secondary bitmap
     Window_RelationshipInfo.prototype.drawItemName = function(item, x, y, width) {
@@ -571,8 +571,8 @@ DataManager._databaseFiles.push(
     };
     
     Window_Relationships.prototype.windowHeight = function() {
-        return Graphics.boxHeight - this.fittingHeight(1)
-    }
+        return Graphics.boxHeight - this.fittingHeight(1);
+    };
     
     Window_Relationships.prototype.drawItem = function(index) {
         var item = this._list[index];
@@ -583,7 +583,6 @@ DataManager._databaseFiles.push(
         var tempX = 0;
         if (item.symbol === "relationship") {
             var q = $gameRelationships.get(Number(item.ext));
-            //if (q.icon > -1 && (Darkkitten["Config"]["RelationshipSystem"]["Use Icons"]).toLowerCase() === "true") {
             if (q.icon > -1 && Darkkitten.Parameters['USe Icons'].toLowerCase() === "true") {
                 this.drawIcon(q.icon, rect.x + 8, rect.y + 2);
                 tempX = 40;
@@ -634,7 +633,7 @@ DataManager._databaseFiles.push(
                 flag = true;
                 if (showCount === "true")
                     count = " (" + String(this.counter[i]) + ")";
-                if (catMode == 1 && this.counter[i] == 0)
+                if (catMode === 1 && this.counter[i] === 0)
                     flag = false;
                 if (catMode > 0 || this.counter[i] > 0)
                     this.addCommand(this.cats[i] + count, "cat", flag, String(i));
@@ -771,7 +770,7 @@ DataManager._databaseFiles.push(
     Scene_Relationship.prototype.cancelInfo = function() {
         this.relationshipWindow.activate();
         this.relationshipInfo.deactivate();
-    }
+    };
     
     Scene_Relationship.prototype.handleRelationship = function() {
         this.relationshipWindow.deactivate();

@@ -2,7 +2,7 @@
 	["Unknown", "Known"],
 	{
 		"id": 1,
-		"face": "People1"
+		"face": "People1",
 		"name": "Beverly",
 		"cat": 0,
 		"current_status": "none",
@@ -10,10 +10,10 @@
 		"levelvar": 100,
 		"eventid": 17,
 		"likes":[
-		["item", 1, false]
+		["item", 1, "false"]
 		],
 		"dislikes": [
-		["item",3, false]
+		["item", 3, "false"]
 		]
 	}
 ]
