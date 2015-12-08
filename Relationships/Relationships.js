@@ -97,6 +97,10 @@ DataManager._databaseFiles.push(
                 $gameParty.addRelationship(Number(args[1]));
                 break;
                 //TODO: Add Change Status code.
+           case 'cat':
+           		//args[1] = Relationship Id, args[2] = Catagory Number (0-3, I think)
+           		$gameRelationships.changeRelationshipCat(Number(args[1]), Number(args[2]));
+           break;
             }
         }
     };
@@ -209,13 +213,13 @@ DataManager._databaseFiles.push(
         this.rawData = relationshipsData;
         this.cat = relationshipsData.cat;
         this.name = relationshipsData.name;
-        this.relationshiplvl = $gameVariables.value(relationshipData.levelvar);
+        this.relationshiplvl = $gameVariables[relationshipsData.levelvar];
         this.desc = relationshipsData.desc;
         this.likes = relationshipsData.likes;
         this.dislikes = relationshipsData.dislikes;
-        this.location = relationshipData.eventid;
+        this.location = relationshipsData.eventid;
         this.current_status = "Unknown";
-        var rlevel = relationshipData.levelvar;
+        //var rlevel = relationshipData.levelvar;
     };
     
     
@@ -251,8 +255,9 @@ DataManager._databaseFiles.push(
         this.current_status = "none";
         this.relationshiplvl = 0;
         $gameVariable.setValue(this.rlevel, 0);
-        
     };
+    
+
 
 //---------------------------------------------------------------------------------------------
 // Game_Relationships
@@ -295,6 +300,9 @@ DataManager._databaseFiles.push(
         return data;
     };
     
+    Game_Relationships.prototype.changeRelationshipCat = function(relationship_id, catagoryid) {
+    	//Todo: Write the code to change the Relationship Catagory.
+	};
 
 //---------------------------------------------------------------------------------------------
 // Window_Base
