@@ -1,10 +1,10 @@
 [
-	["Unknown", "Known"],
+	["Unknown", "Known", "Liked", "Disliked, "Hated", "Loved"],
 	{
 		"id": 1,
 		"face": "People1",
 		"name": "Beverly",
-		"cat": 0,
+		"cat": 1,
 		"current_status": "none",
 		"desc": "Beverly is outgoing and fun to be around",
 		"levelvar": 100,

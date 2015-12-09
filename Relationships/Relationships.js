@@ -34,10 +34,10 @@
  * Default Mastered
  * @default Mastered
  *
- * @param Face
+ * @param Graphics
  * @desc Which face Graphics to use?.
- * Default Package1
- * @default Package1
+ * Default Package1_1
+ * @default Package1_1
  *
  * @param Use Liked and Disliked Items
  * @desc Hide Liked and Disliked Items or Not, true = hide, false = show
@@ -698,8 +698,11 @@ DataManager._databaseFiles.push(
     Window_RelationshipFilter.prototype.initialize = function() {
         this.qFilters = [
             "All",
-            "Unknown",
-            "Known"
+            "Known",
+            "Loved",
+            "Hated",
+            "Liked",
+            "Disliked"
         ];
         var xx = Graphics.boxWidth - 320;
         var yy = Graphics.boxHeight - this.windowHeight();
