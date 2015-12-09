@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v1.0.4 Enables a Command Input system.
+ * @plugindesc v1.1.0 CmdInp Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -15,6 +15,16 @@
  * @desc Maximum number of Characters you can input.
  * Default 12
  * @default 12
+ * 
+ * @param Use Image
+ * @desc to use image or not.
+ * Default false
+ * @default false
+ *
+ * @param Image Name
+ * @desc The Name of the image in /img/pictures  without the .png
+ * Default ClipComputer
+ * @default ClipComputer
  *
  * @param Default Header
  * @desc The Default name of the Input Window. 
@@ -35,20 +45,34 @@ Darkkitten.Param = Darkkitten.Param || {};
 var Imported = Imported || {};
 Imported.CmdInp = true;
 
+
+Darkkitten.Param.UseImage = Darkkitten.Parameters['Use Image'];
+
 //Get Plugin Command Variables if not default.
 var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 Game_Interpreter.prototype.pluginCommand = function(command, args) {
     getInformation_pluginCommand.call(this, command, args);
     if (command === "enter_text") {
         if(args.length > 1 ){
-        	//Darkkitten.Param.defaultPromptText = '';
+        	//This uses command arguments.
 			Darkkitten.Param.varId = Number(args[0]);
 			Darkkitten.Param.maxLength = Number(args[1]);
 			Darkkitten.Param.Def = "false";
-			for (i = 2; i < args.length; i++){
+			//Check if you have the script to enable images and if true then set it.
+			if (Darkkitten.Param.UseImage === "true")
+			{
+				Darkkitten.Param.defImage = args[2];
+				//moves the Prompt Text to Argument 3 Since Image name comes first.
+				for (i = 3; i < args.length; i++){
 				 Darkkitten.Param.defaultPromptText += args[i]+ " ";
 				}
-				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
+			}
+			//this is when Use Image is false.
+			else {	
+			for (i = 2; i < args.length; i++){
+				 Darkkitten.Param.defaultPromptText += args[i]+ " ";
+				}				
+			}
 				SceneManager.push(Scene_Input);
 					
 			}
@@ -56,8 +80,11 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 				Darkkitten.Param.varId = Number(Darkkitten.Parameters['Text Variable']);
 				Darkkitten.Param.maxLength = Number(Darkkitten.Parameters['Max Characters']);
 				Darkkitten.Param.defaultPromptText = String(Darkkitten.Parameters['Default Header']);
+				if (Darkkitten.Param.UseImage === "true")
+				{
+					Darkkitten.Param.defImage = Darkkitten.Parameters['Image Name'];
+				} 
 				Darkkitten.Param.Def = "true";
-				console.log("\n varId: "+ Darkkitten.Param.varId + " maxLength: "+ Darkkitten.Param.maxLength +" Default Prompt Text: "+Darkkitten.Param.defaultPromptText+"\n");
 				SceneManager.push(Scene_Input);
 			}
 			console.log(args.length);
@@ -248,29 +275,65 @@ Window_TextEdit.prototype.drawChar = function(index) {
 
 Window_TextEdit.prototype.refresh = function() {
     this.contents.clear();
+    
     switch(Darkkitten.Param.Def.toLowerCase())
     {
 		case "true":
-			this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
-    		for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
+			if (Darkkitten.Param.UseImage === "true")
+			{
+			
+				var bitmap = ImageManager.loadPicture(Darkkitten.Param.defImage);
+				this.contents.blt(bitmap, 0 , 0, bitmap._canvas.width, bitmap._canvas.height, 10, 0, 144, 144);
+			
+				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), (this.left() + 10), this.lineHeight());
+    			for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     			this.drawUnderline(i);
-   			}
-    		for (var j = 0; j < this._text.length; j++) {
-       			this.drawChar(j);
-  			}
-   			var rect = this.itemRect(this._index);
-    		this.setCursorRect(rect.x, rect.y, rect.width, rect.height);	
+   				}
+    			for (var j = 0; j < this._text.length; j++) {
+       				this.drawChar(j);
+  				}
+   					var rect = this.itemRect(this._index);
+    				this.setCursorRect(rect.x, rect.y, rect.width, rect.height);	
+    		}
+    		else
+    		{
+				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
+    			for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
+    			this.drawUnderline(i);
+   				}
+    			for (var j = 0; j < this._text.length; j++) {
+       				this.drawChar(j);
+  				}
+   					var rect = this.itemRect(this._index);
+    				this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+			}
 		break;
 		case "false":
-			this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
-   			 for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
-    			 this.drawUnderline(i);
-    		 }
-   			 for (var j = 0; j < this._text.length; j++) {
-        		this.drawChar(j);
-   			 }
-    		var rect = this.itemRect(this._index);
-    		this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+			if (Darkkitten.Param.UseImage === "true")
+			{
+				var bitmap = ImageManager.loadPicture(Darkkitten.Param.defImage);
+				this.contents.blt(bitmap, 0, 0, bitmap._canvas.width, bitmap._canvas.height, 10, 0, 144, 144)
+				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), (this.left() + 10), this.lineHeight());
+   			 	for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
+    				 this.drawUnderline(i);
+    		 	}
+   			 	for (var j = 0; j < this._text.length; j++) {
+        			this.drawChar(j);
+   			 	}
+    			var rect = this.itemRect(this._index);
+    			this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+    		}
+    		else{
+    			this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
+   			 	for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
+    				 this.drawUnderline(i);
+    		 	}
+   			 	for (var j = 0; j < this._text.length; j++) {
+        			this.drawChar(j);
+   			 	}
+    			var rect = this.itemRect(this._index);
+    			this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+			}
 		break;
 	}
 }
