@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v1.1.0 CmdInp Enables a Command Input system.
+ * @plugindesc v1.1.1 CmdInp Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -29,12 +29,17 @@
  * @param Default Header
  * @desc The Default name of the Input Window. 
    Place "" around the text.
- * default This is a Imput Window
- * @default This is a Input Window
- *
- * @help Use Plugin Command: enter_text <VariableNumber> <MaxCharacters> <Default Text>
- * Example: enter_text 12 18 Hello World
- * or you can just use enter_text   to use the default settings.
+ * default "This is a Imput Window"
+ * @default "This is a Input Window"
+ * 
+ * @param Default InputText
+ * @desc The Default text for the Input Bar.
+ * Place "" around the text.
+ * default "InputText"
+ * @default "InputText"
+ * @help Use Plugin Command: enter_text <VariableNumber> <MaxCharacters> <useimg> [ImageName] <InputWindowName> <InputDefaultext>
+ * Example: enter_text 1 12 true ClipComputer This_is_an_Input_Window Test
+ * or enter_text 1 12 false This_is_an_Input_Window test  
  *
  */
 
@@ -45,8 +50,7 @@ Darkkitten.Param = Darkkitten.Param || {};
 var Imported = Imported || {};
 Imported.CmdInp = true;
 
-
-Darkkitten.Param.UseImage = Darkkitten.Parameters['Use Image'];
+//Darkkitten.Param.UseImage = Darkkitten.Parameters['Use Image'];
 
 //Get Plugin Command Variables if not default.
 var getInformation_pluginCommand = Game_Interpreter.prototype.pluginCommand;
@@ -58,28 +62,31 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 			Darkkitten.Param.varId = Number(args[0]);
 			Darkkitten.Param.maxLength = Number(args[1]);
 			Darkkitten.Param.Def = "false";
+      Darkkitten.Param.UseImage = Number(args[2]);
 			//Check if you have the script to enable images and if true then set it.
 			if (Darkkitten.Param.UseImage === "true")
 			{
-				Darkkitten.Param.defImage = args[2];
-				//moves the Prompt Text to Argument 3 Since Image name comes first.
-				for (i = 3; i < args.length; i++){
-				 Darkkitten.Param.defaultPromptText += args[i]+ " ";
-				}
+        for (i=3,j=4,k=5; i < args.length, j < args.length, k < args.length; i++, j++, k++){
+          Darkkitten.Param.defImage = args[i].toString(); + " ";
+          Darkkitten.Param.defaultPromptText = args[j].toString()+ " ";
+          Darkkitten.Param.defaultInputText = args[k].toString()+ " ";
+        }
 			}
 			//this is when Use Image is false.
 			else {	
-			for (i = 2; i < args.length; i++){
-				 Darkkitten.Param.defaultPromptText += args[i]+ " ";
-				}				
+        for (i=3,j=4; i < args.length, j < args.length; i++, j++) {
+          Darkkitten.Param.defaultPromptText = args[i].toString()+ " ";
+          Darkkitten.Param.defaultInputText = args[j].toString()+ " ";
+
+        }
 			}
 				SceneManager.push(Scene_Input);
-					
 			}
 			else{
 				Darkkitten.Param.varId = Number(Darkkitten.Parameters['Text Variable']);
 				Darkkitten.Param.maxLength = Number(Darkkitten.Parameters['Max Characters']);
 				Darkkitten.Param.defaultPromptText = String(Darkkitten.Parameters['Default Header']);
+        Darkkitten.Param.defaultInputText = String(Darkkitten.Parameters['Default InputText']);
 				if (Darkkitten.Param.UseImage === "true")
 				{
 					Darkkitten.Param.defImage = Darkkitten.Parameters['Image Name'];
@@ -87,9 +94,8 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
 				Darkkitten.Param.Def = "true";
 				SceneManager.push(Scene_Input);
 			}
-			console.log(args.length);
       }
-}
+};
 
 //------------------------------------------------------------------------
 //Scene_Input
@@ -110,49 +116,47 @@ Scene_Input.prototype.constructor = Scene_Input;
 
 Scene_Input.prototype.initialize = function() {
     Scene_MenuBase.prototype.initialize.call(this);
-}
+};
 
 Scene_Input.prototype.create = function() {
     Scene_MenuBase.prototype.create.call(this);
     this.CEW();
     this.CIW();
-}
+};
 
 Scene_Input.prototype.start = function() {
     Scene_MenuBase.prototype.start.call(this);
     this._editTextWindow.refresh();
-}
+};
 
 Scene_Input.prototype.CEW = function() {
 	  this._editTextWindow = new Window_TextEdit();
 	  this.addWindow(this._editTextWindow);
-}
+};
 
 Scene_Input.prototype.CIW = function() {
 	  this._inputTextWindow = new Window_TextInput(this._editTextWindow);
 	  this._inputTextWindow.setHandler('ok', this.onThatsJustFine.bind(this));
 	  this.addWindow(this._inputTextWindow);
-}
+};
 
 Scene_Input.prototype.onThatsJustFine = function() {
 	var str = this._editTextWindow.finaltext();
 	var re = new RegExp(str, "i");
 	$gameVariables.setValue(Darkkitten.Param.varId, re.source);	
-	//console.log(re.source);
 	Darkkitten.Param.defaultPromptText = '';
 	this.popScene();
-}
+};
 
 //-----------------------------------------------------------------------------
 // Window_TextEdit
 //
-// The window for editing Text input screen.
+// The window for editing the Text on the input screen.
 
 function Window_TextEdit() {
     this.initialize.apply(this, arguments);
 }
 
-//Constructors
 Window_TextEdit.prototype = Object.create(Window_Base.prototype);
 Window_TextEdit.prototype.constructor = Window_TextEdit;
 
@@ -162,40 +166,38 @@ Window_TextEdit.prototype.initialize = function() {
     var x = (Graphics.boxWidth - width) / 2;
     var y = (Graphics.boxHeight - (height + this.fittingHeight(9) + 8)) / 2;
     Window_Base.prototype.initialize.call(this, x, y, width, height);
-    this.defaultText = $gameVariables[Darkkitten.Param.varId];
-    if (this.defaultText == null)
+    this.defaultText = Darkkitten.Param.defaultInputText;
+    if (this.defaultText === null)
     {
-		this.defaultText = '';
-	}
-	else {
-    		this.defaultText  = $gameVariables[Darkkitten.Param.varId]; 
+		this.defaultText = $gameVariables[Darkkitten.Param.varId];
     }
     this._text = this.defaultText.slice(0, Darkkitten.Param.maxLength);
+    console.log(this._text);
     this._index = this._text.length;
     this.activate();
     this.refresh();
-}
+};
 
 Window_TextEdit.prototype.windowWidth = function() {
     return 480;
-}
+};
 
 Window_TextEdit.prototype.windowHeight = function() {
     return this.fittingHeight(4);
-}
+};
 
 Window_TextEdit.prototype.finaltext = function() {
+      console.log(this._text);
     return this._text;
-    console.log(this._text);
-}
+};
 
 Window_TextEdit.prototype.restoreDefault = function() {
     var _text = this.defaultText;
     this._index = this._text.length;
     this.refresh();
-    return this._text.length > 0;
     console.log(this._text +" "+this.defaultText);
-}
+    return this._text.length > 0;
+};
 
 Window_TextEdit.prototype.add = function(ch) {
 	var maxLength = Darkkitten.Parameters.maxLength;
@@ -207,7 +209,7 @@ Window_TextEdit.prototype.add = function(ch) {
     } else {
         return false;
     }
-}
+};
 
 Window_TextEdit.prototype.back = function() {
     if (this._index > 0) {
@@ -218,32 +220,32 @@ Window_TextEdit.prototype.back = function() {
     } else {
         return false;
     }
-}
+};
+
+ Window_TextEdit.prototype.charWidth = function() {
+     var text = $gameSystem.isJapanese() ? '\uff21' : 'A';
+    return this.textWidth(text);
+ };
+
+
+Window_TextEdit.prototype.left = function() {
+	var  textCenter = (this.contentsWidth() + this.DefaultTextWidth()) / 2;
+	var textWidth = (Darkkitten.Param.maxLength + 2) * this.charWidth();
+     return Math.min(textCenter - textWidth / 2, this.contentsWidth() - textWidth);
+};
 
 Window_TextEdit.prototype.DefaultTextWidth = function(){
 	return (Darkkitten.Param.maxLength + 40);
-}
-
-Window_TextEdit.prototype.charWidth = function() {
-    var text = $gameSystem.isJapanese() ? '\uff21' : 'A';
-    return this.textWidth(text);
-}
-
-Window_TextEdit.prototype.left = function() {
-		var textCenter = (this.contentsWidth() + this.DefaultTextWidth()) / 2;
-		var textWidth = (Darkkitten.Param.maxLength + 2) * this.charWidth();
-    	return Math.min(textCenter - textWidth / 2, this.contentsWidth() - textWidth);
-}
+};
 
 Window_TextEdit.prototype.itemRect = function(index) {
     return {
-        //x: this.left() + index * this.charWidth(),
-        x: this.left() + index * this.charWidth() - 13,
-        y: 70,
+        x: this.left() + index * this.charWidth(),
+        y: 54,
         width: this.charWidth(),
         height: this.lineHeight()
-    }
-}
+    };
+};
 
 Window_TextEdit.prototype.underlineRect = function(index) {
     var rect = this.itemRect(index);
@@ -252,11 +254,11 @@ Window_TextEdit.prototype.underlineRect = function(index) {
     rect.width -= 2;
     rect.height = 2;
     return rect;
-}
+};
 
 Window_TextEdit.prototype.underlineColor = function() {
     return this.normalColor();
-}
+};
 
 Window_TextEdit.prototype.drawUnderline = function(index) {
     var rect = this.underlineRect(index);
@@ -264,17 +266,16 @@ Window_TextEdit.prototype.drawUnderline = function(index) {
     this.contents.paintOpacity = 48;
     this.contents.fillRect(rect.x, rect.y, rect.width, rect.height, color);
     this.contents.paintOpacity = 255;
-}
+};
 
 Window_TextEdit.prototype.drawChar = function(index) {
     var rect = this.itemRect(index);
     this.resetTextColor();
     this.drawText(this._text[index] || '', rect.x, rect.y);
-    //console.log("\n drawChar: "+this._text + " Index: " + index+"\n");
-}
+};
 
 Window_TextEdit.prototype.refresh = function() {
-    this.contents.clear();
+  this.contents.clear();
     
     switch(Darkkitten.Param.Def.toLowerCase())
     {
@@ -284,8 +285,8 @@ Window_TextEdit.prototype.refresh = function() {
 			
 				var bitmap = ImageManager.loadPicture(Darkkitten.Param.defImage);
 				this.contents.blt(bitmap, 0 , 0, bitmap._canvas.width, bitmap._canvas.height, 10, 0, 144, 144);
-			
-				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), (this.left() + 10), this.lineHeight());
+			  console.log(_text);
+				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), (this.left() + 10), this.lineHeight() - 25);
     			for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     			this.drawUnderline(i);
    				}
@@ -297,7 +298,8 @@ Window_TextEdit.prototype.refresh = function() {
     		}
     		else
     		{
-				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
+				//this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight() - 25);
+        this.drawTextEx(Darkkitten.Param.defaultPromptText, 0, this.lineHeight() - 25)
     			for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     			this.drawUnderline(i);
    				}
@@ -312,8 +314,8 @@ Window_TextEdit.prototype.refresh = function() {
 			if (Darkkitten.Param.UseImage === "true")
 			{
 				var bitmap = ImageManager.loadPicture(Darkkitten.Param.defImage);
-				this.contents.blt(bitmap, 0, 0, bitmap._canvas.width, bitmap._canvas.height, 10, 0, 144, 144)
-				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), (this.left() + 10), this.lineHeight());
+				this.contents.blt(bitmap, 0, 0, bitmap._canvas.width, bitmap._canvas.height, 10, 0, 144, 144);
+				this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), (this.left() + 10), this.lineHeight() - 25);
    			 	for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     				 this.drawUnderline(i);
     		 	}
@@ -323,8 +325,10 @@ Window_TextEdit.prototype.refresh = function() {
     			var rect = this.itemRect(this._index);
     			this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
     		}
-    		else{
-    			this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight());
+    		else 
+        {
+        //this.drawTextEx(Darkkitten.Param.defaultPromptText.slice(9), 0, this.lineHeight() - 25);
+        this.drawTextEx(Darkkitten.Param.defaultPromptText, 0, this.lineHeight() - 25)
    			 	for (var i = 0; i < Darkkitten.Param.maxLength; i++) {
     				 this.drawUnderline(i);
     		 	}
@@ -333,15 +337,15 @@ Window_TextEdit.prototype.refresh = function() {
    			 	}
     			var rect = this.itemRect(this._index);
     			this.setCursorRect(rect.x, rect.y, rect.width, rect.height);
+        }
+        break;
 			}
-		break;
-	}
-}
+};
 
 //-----------------------------------------------------------------------------
 // Window_TextInput
 //
-// The window for selecting text characters on the name input screen.
+// The window for selecting text characters on the input screen.
 
 function Window_TextInput() {
     this.initialize.apply(this, arguments);
@@ -412,7 +416,7 @@ Window_TextInput.JAPAN3 =
 
 Window_TextInput.prototype.initialize = function(editWindow) {
     var x = editWindow.x;
-    var y = editWindow.y + editWindow.height + 10;
+    var y = editWindow.y + editWindow.height + 8;
     var width = editWindow.width;
     var height = this.windowHeight();
     Window_Selectable.prototype.initialize.call(this, x, y, width, height);
@@ -538,16 +542,47 @@ Window_TextInput.prototype.processCursorMove = function() {
     }
 };
 
+// Window_TextInput.prototype.processHandling = function() {
+//     if (this.isOpen() && this.active) {
+//         if (Input.isTriggered('shift')) {
+//             this.processJump();
+//         }
+//         if (Input.isRepeated('cancel')) {
+//             this.processBack();
+//         }
+//         if (Input.isRepeated('ok')) {
+//             this.processOk();
+//         }
+//     }
+// };
+
 Window_TextInput.prototype.processHandling = function() {
     if (this.isOpen() && this.active) {
-        if (Input.isTriggered('shift')) {
-            this.processJump();
-        }
-        if (Input.isRepeated('cancel')) {
-            this.processBack();
-        }
-        if (Input.isRepeated('ok')) {
-            this.processOk();
+        if (Imported.Quasi_Input){
+          if (Input.isTriggered('#enter')) {
+               if (this.isOk()){this.onTextOk();}
+               else{this.processJump();}
+          }
+          else if (Input.anyPressed("a-z0-9")) {
+                    if (!Input.isPressed('#enter')){
+                    this._editWindow.add(Input._lastPressed);
+                    }
+                   
+          }
+            if (Input.isRepeated('#backspace')) {
+               this.processBack();
+             }
+
+        } else{
+             if (Input.isTriggered('shift')) {
+                 this.processJump();
+             }
+             if (Input.isRepeated('cancel')) {
+                 this.processBack();
+             }
+             if (Input.isRepeated('ok')) {
+                 this.processOk();
+             }
         }
     }
 };
