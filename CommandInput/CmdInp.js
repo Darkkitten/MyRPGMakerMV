@@ -3,7 +3,7 @@
 //=============================================================================
 
 /*:
- * @plugindesc v1.1.1 CmdInp Enables a Command Input system.
+ * @plugindesc v1.1.2 CmdInp Enables a Command Input system.
  * @author Darkkitten
  *
  * @param Text Variable
@@ -542,23 +542,9 @@ Window_TextInput.prototype.processCursorMove = function() {
     }
 };
 
-// Window_TextInput.prototype.processHandling = function() {
-//     if (this.isOpen() && this.active) {
-//         if (Input.isTriggered('shift')) {
-//             this.processJump();
-//         }
-//         if (Input.isRepeated('cancel')) {
-//             this.processBack();
-//         }
-//         if (Input.isRepeated('ok')) {
-//             this.processOk();
-//         }
-//     }
-// };
-
 Window_TextInput.prototype.processHandling = function() {
     if (this.isOpen() && this.active) {
-        if (Imported.Quasi_Input){
+        if (Imported.Quasi_Input || Imported.QInput){
           if (Input.isTriggered('#enter')) {
                if (this.isOk()){this.onTextOk();}
                else{this.processJump();}
@@ -573,7 +559,7 @@ Window_TextInput.prototype.processHandling = function() {
                this.processBack();
              }
 
-        } else{
+        }else{
              if (Input.isTriggered('shift')) {
                  this.processJump();
              }
