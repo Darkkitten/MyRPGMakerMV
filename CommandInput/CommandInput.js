@@ -3,7 +3,7 @@
 //=============================================================================
 /*:
  * @target MZ
- * @plugindesc v2.0.1 Command Input Enables a Window Input system for MZ
+ * @plugindesc v2.0.2 Command Input Enables a Window Input system for MZ
  * @author Darkkitten
  * @url https://raw.githubusercontent.com/Darkkitten/MyRPGMakerMV/master/CommandInput/CommandInput.js
  * @help CommandInput.js
@@ -249,14 +249,7 @@
 	 };
 	
 	Window_TextEdit.prototype.DefaultTextWidth = function(text){
-		if (this._useImage === true)
-		{
-			return (this._MaxLength + 40);
-		}
-		else
-		{
-			return (this._MaxLength);
-		}
+			return this.contents.measureTextWidth(text);
 	};
 
 	Window_TextEdit.prototype.left = function() {
@@ -316,7 +309,7 @@
 
 			var bitmap = ImageManager.loadPicture(this._imageName);
 			this.contents.blt(bitmap, 0, 0, Graphics._canvas.width, Graphics._canvas.height, 10, 0, 144, 144);
-			this.drawText(this._text, bitmap.width / 2, this.lineHeight());
+			//this.drawText(this._text, bitmap.width / 2, this.lineHeight());
 			for (let i = 0; i < this._MaxLength; i++) {
 				this.drawUnderline(i);
 			}
@@ -328,7 +321,7 @@
 		}
 		else
 		{
-			this.drawText(this._text.slice(9), 0, this.lineHeight());
+			//this.drawText(this._text.slice(9), 0, this.lineHeight());
 			for (let i = 0; i < this._MaxLength; i++) {
 				this.drawUnderline(i);
 			}
