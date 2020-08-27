@@ -3,7 +3,7 @@
 //=============================================================================
 /*:
  * @target MZ
- * @plugindesc v2.0.0 Command Input Enables a Window Input system for MZ
+ * @plugindesc v2.0.1 Command Input Enables a Window Input system for MZ
  * @author Darkkitten
  * @help CommandInput.js
  *
@@ -50,7 +50,7 @@
 (() => {
 	
 	const pluginName = "CommandInput";
-	
+
 	PluginManager.registerCommand(pluginName, "enter_text", args => {
 		SceneManager.push(Scene_TextInput);
 		SceneManager.prepareNextScene(Number(args.VariableID), Number(args.MaxCharacters), Boolean(args.UseImage), String(args.ImageName), String(args.InputWindowName), Boolean(args.useVariableforInput), String(args.InputDefaultext));
@@ -315,9 +315,7 @@
 
 			var bitmap = ImageManager.loadPicture(this._imageName);
 			this.contents.blt(bitmap, 0, 0, Graphics._canvas.width, Graphics._canvas.height, 10, 0, 144, 144);
-			this.drawText(this._text,0, this.lineHeight() - 25);
-			//ImageManager.loadPicture(this._ImageName);
-			//this.drawActorFace(this._imageName, 0, 0);
+			this.drawText(this._text, bitmap.width / 2, this.lineHeight());
 			for (let i = 0; i < this._MaxLength; i++) {
 				this.drawUnderline(i);
 			}
@@ -329,7 +327,7 @@
 		}
 		else
 		{
-			this.drawText(this._text.slice(9), (this.left() + 10), this.lineHeight() -25);
+			this.drawText(this._text.slice(9), 0, this.lineHeight());
 			for (let i = 0; i < this._MaxLength; i++) {
 				this.drawUnderline(i);
 			}
