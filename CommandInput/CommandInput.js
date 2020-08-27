@@ -5,6 +5,7 @@
  * @target MZ
  * @plugindesc v2.0.1 Command Input Enables a Window Input system for MZ
  * @author Darkkitten
+ * @url https://raw.githubusercontent.com/Darkkitten/MyRPGMakerMV/master/CommandInput/CommandInput.js
  * @help CommandInput.js
  *
  * Fallow the Plugin Commands when you place this in your Events.
